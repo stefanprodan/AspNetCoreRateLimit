@@ -14,12 +14,13 @@ namespace KestrelRateLimit
     public class RateLimitMiddleware
     {
         private readonly RequestDelegate _next;
-        private RateLimitOptions _options;
         private readonly ILogger _logger;
         private readonly IIPAddressParser _ipParser;
         private readonly IMemoryCache _memoryCache;
         private readonly RateLimitProcessor _processor;
-        
+
+        private RateLimitOptions _options;
+
         public RateLimitMiddleware(RequestDelegate next, 
             IOptions<RateLimitOptions> options, 
             ILoggerFactory loggerFactory,
@@ -30,7 +31,7 @@ namespace KestrelRateLimit
             _next = next;
             _options = options.Value;
             _logger = loggerFactory.CreateLogger<RateLimitMiddleware>();
-            _ipParser = ipParser != null ? ipParser : new DefaultIpAddressParser();
+            _ipParser = ipParser != null ? ipParser : new ReversRoxyIpParser();
             _memoryCache = memoryCache;
 
             _processor = new RateLimitProcessor(_options, new MemoryCacheRateLimitStore(_memoryCache), _ipParser);

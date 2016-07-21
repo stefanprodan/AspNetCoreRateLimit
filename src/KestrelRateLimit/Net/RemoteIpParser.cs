@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace KestrelRateLimit
 {
-    public class DefaultIpAddressParser : IIPAddressParser
+    public class RemoteIpParser : IIPAddressParser
     {
         public bool ContainsIp(List<string> ipRules, string clientIp)
         {
