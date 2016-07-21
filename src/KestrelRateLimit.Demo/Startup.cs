@@ -28,6 +28,7 @@ namespace KestrelRateLimit.Demo
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
+            services.AddMemoryCache();
 
             //configure rate limiting middle-ware
             services.Configure<RateLimitOptions>(Configuration.GetSection("RateLimiting"));

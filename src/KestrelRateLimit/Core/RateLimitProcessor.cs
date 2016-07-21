@@ -19,6 +19,85 @@ namespace KestrelRateLimit
             _ipParser = ipParser;
         }
 
+        public void ApplyRules(RequestIdentity identity, TimeSpan timeSpan, RateLimitPeriod rateLimitPeriod, ref long rateLimit)
+        {
+            // apply endpoint rate limits
+            if (_options.EnableEndpointRateLimiting && _options.EndpointRules != null)
+            {
+                var pathWithVerb = $"{identity.HttpVerb}:{identity.Endpoint}".ToLowerInvariant();
+                var rules = _options.EndpointRules.Where(x => pathWithVerb == x.Value.ToLowerInvariant()).ToList();
+                if (rules.Any())
+                {
+                    // get the lower limit from all applying rules
+                    var customRate = (from r in rules let rateValue = r.GetLimit(rateLimitPeriod) select rateValue).Min();
+
+                    if (customRate > 0)
+                    {
+                        rateLimit = customRate;
+                    }
+                }
+            }
+
+            // apply custom rate limit for clients that will override endpoint limits
+            if (_options.EnableClientRateLimiting &&  _options.ClientRules != null && _options.ClientRules.Select(x => x.Value).Contains(identity.ClientKey))
+            {
+                var limit = _options.ClientRules.First(x => x.Value == identity.ClientKey).GetLimit(rateLimitPeriod);
+                if (limit > 0)
+                {
+                    rateLimit = limit;
+                }
+            }
+
+            // enforce ip rate limit as is most specific 
+            string ipRule = null;
+            if (_options.EnableIpRateLimiting && _options.IpRules != null && _ipParser.ContainsIp(_options.IpRules.Select(x => x.Value).ToList(), identity.ClientIp, out ipRule))
+            {
+                var limit = _options.IpRules.First(x => x.Value == ipRule).GetLimit(rateLimitPeriod);
+                if (limit > 0)
+                {
+                    rateLimit = limit;
+                }
+            }
+        }
+
+        public RateLimitCounter ProcessRequest(RequestIdentity requestIdentity, TimeSpan timeSpan, RateLimitPeriod period, out string id)
+        {
+            var throttleCounter = new RateLimitCounter()
+            {
+                Timestamp = DateTime.UtcNow,
+                TotalRequests = 1
+            };
+
+            id = ComputeThrottleKey(requestIdentity, period);
+
+            // serial reads and writes
+            lock (_processLocker)
+            {
+                var entry = _store.GetCounter(id);
+                if (entry.HasValue)
+                {
+                    // entry has not expired
+                    if (entry.Value.Timestamp + timeSpan >= DateTime.UtcNow)
+                    {
+                        // increment request count
+                        var totalRequests = entry.Value.TotalRequests + 1;
+
+                        // deep copy
+                        throttleCounter = new RateLimitCounter
+                        {
+                            Timestamp = entry.Value.Timestamp,
+                            TotalRequests = totalRequests
+                        };
+                    }
+                }
+
+                // stores: id (string) - timestamp (datetime) - total (long)
+                _store.SaveCounter(id, throttleCounter, timeSpan);
+            }
+
+            return throttleCounter;
+        }
+
         public string RetryAfterFrom(DateTime timestamp, RateLimitPeriod period)
         {
             var secondsPast = Convert.ToInt32((DateTime.UtcNow - timestamp).TotalSeconds);
@@ -62,8 +141,10 @@ namespace KestrelRateLimit
 
             if (_options.EnableEndpointRateLimiting)
             {
+                var pathWithVerb = $"{requestIdentity.HttpVerb}:{requestIdentity.Endpoint}".ToLowerInvariant();
+
                 if (_options.EndpointWhitelist != null
-                    && _options.EndpointWhitelist.Any(x => requestIdentity.Endpoint.Contains(x.ToLowerInvariant())))
+                    && _options.EndpointWhitelist.Any(x => pathWithVerb == x.ToLowerInvariant()))
                 {
                     return true;
                 }
@@ -72,7 +153,7 @@ namespace KestrelRateLimit
             return false;
         }
 
-        internal string ComputeThrottleKey(RequestIdentity requestIdentity, RateLimitPeriod period)
+        public string ComputeThrottleKey(RequestIdentity requestIdentity, RateLimitPeriod period)
         {
             var keyValues = new List<string>()
                 {
@@ -91,7 +172,7 @@ namespace KestrelRateLimit
 
             if (_options.EnableEndpointRateLimiting)
             {
-                keyValues.Add(requestIdentity.Endpoint);
+                keyValues.Add($"{requestIdentity.HttpVerb}:{requestIdentity.Endpoint}");
             }
 
             keyValues.Add(period.ToString());
@@ -108,6 +189,62 @@ namespace KestrelRateLimit
 
             var hex = BitConverter.ToString(hashBytes).Replace("-", string.Empty);
             return hex;
+        }
+
+        public List<KeyValuePair<RateLimitPeriod, long>> RatesWithDefaults(List<KeyValuePair<RateLimitPeriod, long>> defRates)
+        {
+            if (!defRates.Any(x => x.Key == RateLimitPeriod.Second))
+            {
+                defRates.Insert(0, new KeyValuePair<RateLimitPeriod, long>(RateLimitPeriod.Second, 0));
+            }
+
+            if (!defRates.Any(x => x.Key == RateLimitPeriod.Minute))
+            {
+                defRates.Insert(1, new KeyValuePair<RateLimitPeriod, long>(RateLimitPeriod.Minute, 0));
+            }
+
+            if (!defRates.Any(x => x.Key == RateLimitPeriod.Hour))
+            {
+                defRates.Insert(2, new KeyValuePair<RateLimitPeriod, long>(RateLimitPeriod.Hour, 0));
+            }
+
+            if (!defRates.Any(x => x.Key == RateLimitPeriod.Day))
+            {
+                defRates.Insert(3, new KeyValuePair<RateLimitPeriod, long>(RateLimitPeriod.Day, 0));
+            }
+
+            if (!defRates.Any(x => x.Key == RateLimitPeriod.Week))
+            {
+                defRates.Insert(4, new KeyValuePair<RateLimitPeriod, long>(RateLimitPeriod.Week, 0));
+            }
+
+            return defRates;
+        }
+
+        public TimeSpan GetTimeSpanFromPeriod(RateLimitPeriod rateLimitPeriod)
+        {
+            var timeSpan = TimeSpan.FromSeconds(1);
+
+            switch (rateLimitPeriod)
+            {
+                case RateLimitPeriod.Second:
+                    timeSpan = TimeSpan.FromSeconds(1);
+                    break;
+                case RateLimitPeriod.Minute:
+                    timeSpan = TimeSpan.FromMinutes(1);
+                    break;
+                case RateLimitPeriod.Hour:
+                    timeSpan = TimeSpan.FromHours(1);
+                    break;
+                case RateLimitPeriod.Day:
+                    timeSpan = TimeSpan.FromDays(1);
+                    break;
+                case RateLimitPeriod.Week:
+                    timeSpan = TimeSpan.FromDays(7);
+                    break;
+            }
+
+            return timeSpan;
         }
     }
 }
