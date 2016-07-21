@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace KestrelRateLimit
 {
     /// <summary>
-    /// Stores the client IP, key and endpoint
+    /// Stores the client IP, ID, endpoint and verb
     /// </summary>
     public class RequestIdentity
     {
@@ -15,5 +15,7 @@ namespace KestrelRateLimit
         public string ClientKey { get; set; }
 
         public string Endpoint { get; set; }
+
+        public string HttpVerb { get; set; }
     }
 }

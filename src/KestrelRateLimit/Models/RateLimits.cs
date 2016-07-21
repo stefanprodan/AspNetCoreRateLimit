@@ -7,6 +7,8 @@ namespace KestrelRateLimit
 {
     public class RateLimits
     {
+        public string Value { get; set; }
+
         public long PerSecond { get; set; }
 
         public long PerMinute { get; set; }

@@ -31,6 +31,7 @@ namespace KestrelRateLimit.Demo
 
             //configure rate limiting middle-ware
             services.Configure<RateLimitOptions>(Configuration.GetSection("RateLimiting"));
+            services.AddSingleton<IIPAddressParser>(new DefaultIpAddressParser());
 
             // Add framework services.
             services.AddMvc();

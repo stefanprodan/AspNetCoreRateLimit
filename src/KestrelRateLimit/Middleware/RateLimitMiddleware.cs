@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -13,15 +14,25 @@ namespace KestrelRateLimit
     {
         private readonly RequestDelegate _next;
         private readonly RateLimitOptions _options;
+        private readonly ILogger _logger;
+        private readonly IIPAddressParser _ipParser;
 
-        public RateLimitMiddleware(RequestDelegate next, IOptions<RateLimitOptions> options)
+        public RateLimitMiddleware(RequestDelegate next, 
+            IOptions<RateLimitOptions> options, 
+            ILoggerFactory loggerFactory,
+            IIPAddressParser ipParser = null
+            )
         {
             _next = next;
             _options = options.Value;
+            _logger = loggerFactory.CreateLogger<RateLimitMiddleware>();
+            _ipParser = ipParser != null ? ipParser : new DefaultIpAddressParser();
         }
 
         public async Task Invoke(HttpContext context)
         {
+            _logger.LogInformation($"Rate limiting request {context.Request.Path} id {context.TraceIdentifier}");
+
             var url = context.Request.GetDisplayUrl();
             var path = context.Request.Path;
             var httpMethod = context.Request.Method;
@@ -39,6 +50,8 @@ namespace KestrelRateLimit
             }
 
             await _next.Invoke(context);
+
+            _logger.LogInformation($"Finished handling request {context.TraceIdentifier}");
         }
 
         protected virtual Task QuotaExceededResponse(HttpContext httpContext, int statusCode, string message, string retryAfter)

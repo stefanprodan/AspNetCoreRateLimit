@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace KestrelRateLimit.Net
+namespace KestrelRateLimit
 {
     public class IPAddressUtil
     {

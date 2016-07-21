@@ -5,7 +5,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace KestrelRateLimit.Net
+namespace KestrelRateLimit
 {
     /// <summary>
     /// IP v4 and v6 range helper by jsakamoto
