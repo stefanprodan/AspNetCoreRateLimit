@@ -14,11 +14,12 @@ namespace KestrelRateLimit
     public class RateLimitMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly RateLimitOptions _options;
+        private RateLimitOptions _options;
         private readonly ILogger _logger;
         private readonly IIPAddressParser _ipParser;
         private readonly IMemoryCache _memoryCache;
         private readonly RateLimitProcessor _processor;
+        
         public RateLimitMiddleware(RequestDelegate next, 
             IOptions<RateLimitOptions> options, 
             ILoggerFactory loggerFactory,
@@ -33,11 +34,12 @@ namespace KestrelRateLimit
             _memoryCache = memoryCache;
 
             _processor = new RateLimitProcessor(_options, new MemoryCacheRateLimitStore(_memoryCache), _ipParser);
+            _options = _processor.GetSetOptionsInCache();
         }
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogInformation($"Rate limiting request {context.Request.Method.ToLowerInvariant()}:{context.Request.Path.ToString().ToUpperInvariant()} id {context.TraceIdentifier}");
+            //_logger.LogInformation($"Rate limiting request {context.Request.Method.ToLowerInvariant()}:{context.Request.Path.ToString().ToUpperInvariant()} id {context.TraceIdentifier}");
 
             if (context.Request.Headers.Keys.Contains("X-Rate-Limit-Info"))
             {
@@ -45,7 +47,7 @@ namespace KestrelRateLimit
             }
 
             // check if rate limiting is enabled
-            if(_options == null || (!_options.EnableEndpointRateLimiting && !_options.EnableClientRateLimiting && !_options.EnableIpRateLimiting))
+                if (_options == null || (!_options.EnableEndpointRateLimiting && !_options.EnableClientRateLimiting && !_options.EnableIpRateLimiting))
             {
                 await _next.Invoke(context);
                 return;
@@ -86,25 +88,24 @@ namespace KestrelRateLimit
                 if (rateLimit > 0)
                 {
                     // increment counter
-                    string requestId;
-                    var counter = _processor.ProcessRequest(identity, timeSpan, rateLimitPeriod, out requestId);
+                    var counterData = _processor.ProcessRequest(identity, timeSpan, rateLimitPeriod);
 
                     // check if key expired
-                    if (counter.Timestamp + timeSpan < DateTime.UtcNow)
+                    if (counterData.Counter.Timestamp + timeSpan < DateTime.UtcNow)
                     {
                         continue;
                     }
 
                     // check if limit is reached
-                    if (counter.TotalRequests > rateLimit)
+                    if (counterData.Counter.TotalRequests > rateLimit)
                     {
                         //compute retry after value
-                        var retryAfter = _processor.RetryAfterFrom(counter.Timestamp, rateLimitPeriod);
+                        var retryAfter = _processor.RetryAfterFrom(counterData.Counter.Timestamp, rateLimitPeriod);
 
                         // log blocked request
-                        _logger.LogInformation($"Request {identity.HttpVerb}:{identity.Endpoint} from IP {identity.ClientIp} ClienId {identity.ClientKey} has been blocked, quota {rateLimit}/{rateLimitPeriod.ToString()} exceeded by {counter.TotalRequests}");
+                        _logger.LogInformation($"Request {identity.HttpVerb}:{identity.Endpoint} from IP {identity.ClientIp} ClienId {identity.ClientKey} has been blocked, quota {rateLimit}/{rateLimitPeriod.ToString()} exceeded by {counterData.Counter.TotalRequests}. Rule {counterData.Key}");
 
-                        var message = string.IsNullOrEmpty(_options.QuotaExceededMessage) ? $"API calls quota exceeded! maximum admitted {rateLimit} per {rateLimitPeriod.ToString()}." : _options.QuotaExceededMessage;
+                        var message = string.IsNullOrEmpty(_options.QuotaExceededMessage) ? $"API calls quota exceeded! maximum admitted {rateLimit} per {rateLimitPeriod.ToString()}. Rule {counterData.Key}" : _options.QuotaExceededMessage;
 
                         // break execution
                         await QuotaExceededResponse(context, _options.HttpStatusCode, message, retryAfter);
@@ -115,7 +116,7 @@ namespace KestrelRateLimit
 
             await _next.Invoke(context);
 
-            _logger.LogInformation($"Finished handling request {context.TraceIdentifier}");
+            //_logger.LogInformation($"Finished handling request {context.TraceIdentifier}");
         }
 
         public virtual RequestIdentity SetIdentity(HttpContext httpContext)

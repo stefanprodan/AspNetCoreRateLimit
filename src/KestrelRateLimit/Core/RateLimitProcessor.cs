@@ -7,7 +7,7 @@ namespace KestrelRateLimit
 {
     public class RateLimitProcessor
     {
-        private readonly RateLimitOptions _options;
+        private RateLimitOptions _options;
         private readonly IRateLimitStore _store;
         private readonly IIPAddressParser _ipParser;
         private static readonly object _processLocker = new object();
@@ -25,7 +25,7 @@ namespace KestrelRateLimit
             if (_options.EnableEndpointRateLimiting && _options.EndpointRules != null)
             {
                 var pathWithVerb = $"{identity.HttpVerb}:{identity.Endpoint}".ToLowerInvariant();
-                var rules = _options.EndpointRules.Where(x => pathWithVerb == x.Value.ToLowerInvariant()).ToList();
+                var rules = _options.EndpointRules.Where(x => pathWithVerb.Contains(x.Value.ToLowerInvariant())).ToList();
                 if (rules.Any())
                 {
                     // get the lower limit from all applying rules
@@ -60,15 +60,16 @@ namespace KestrelRateLimit
             }
         }
 
-        public RateLimitCounter ProcessRequest(RequestIdentity requestIdentity, TimeSpan timeSpan, RateLimitPeriod period, out string id)
+        public RateLimitEntry ProcessRequest(RequestIdentity requestIdentity, TimeSpan timeSpan, RateLimitPeriod period)
         {
-            var throttleCounter = new RateLimitCounter()
+            var counter = new RateLimitCounter
             {
                 Timestamp = DateTime.UtcNow,
                 TotalRequests = 1
             };
 
-            id = ComputeThrottleKey(requestIdentity, period);
+            var key = string.Empty;
+            var id = ComputeThrottleKey(requestIdentity, period, out key);
 
             // serial reads and writes
             lock (_processLocker)
@@ -83,7 +84,7 @@ namespace KestrelRateLimit
                         var totalRequests = entry.Value.TotalRequests + 1;
 
                         // deep copy
-                        throttleCounter = new RateLimitCounter
+                        counter = new RateLimitCounter
                         {
                             Timestamp = entry.Value.Timestamp,
                             TotalRequests = totalRequests
@@ -92,10 +93,15 @@ namespace KestrelRateLimit
                 }
 
                 // stores: id (string) - timestamp (datetime) - total (long)
-                _store.SaveCounter(id, throttleCounter, timeSpan);
+                _store.SaveCounter(id, counter, timeSpan);
             }
 
-            return throttleCounter;
+            return new RateLimitEntry
+            {
+                Counter = counter,
+                Key = key,
+                Id = id
+            };
         }
 
         public string RetryAfterFrom(DateTime timestamp, RateLimitPeriod period)
@@ -144,7 +150,7 @@ namespace KestrelRateLimit
                 var pathWithVerb = $"{requestIdentity.HttpVerb}:{requestIdentity.Endpoint}".ToLowerInvariant();
 
                 if (_options.EndpointWhitelist != null
-                    && _options.EndpointWhitelist.Any(x => pathWithVerb == x.ToLowerInvariant()))
+                    && _options.EndpointWhitelist.Any(x => pathWithVerb.Contains(x.ToLowerInvariant())))
                 {
                     return true;
                 }
@@ -153,7 +159,7 @@ namespace KestrelRateLimit
             return false;
         }
 
-        public string ComputeThrottleKey(RequestIdentity requestIdentity, RateLimitPeriod period)
+        public string ComputeThrottleKey(RequestIdentity requestIdentity, RateLimitPeriod period, out string key)
         {
             var keyValues = new List<string>()
                 {
@@ -177,8 +183,8 @@ namespace KestrelRateLimit
 
             keyValues.Add(period.ToString());
 
-            var id = string.Join("_", keyValues);
-            var idBytes = System.Text.Encoding.UTF8.GetBytes(id);
+            key = string.Join("_", keyValues);
+            var idBytes = System.Text.Encoding.UTF8.GetBytes(key);
 
             byte[] hashBytes;
 
@@ -187,8 +193,7 @@ namespace KestrelRateLimit
                 hashBytes = algorithm.ComputeHash(idBytes);
             }
 
-            var hex = BitConverter.ToString(hashBytes).Replace("-", string.Empty);
-            return hex;
+            return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
         }
 
         public List<KeyValuePair<RateLimitPeriod, long>> RatesWithDefaults(List<KeyValuePair<RateLimitPeriod, long>> defRates)
@@ -245,6 +250,27 @@ namespace KestrelRateLimit
             }
 
             return timeSpan;
+        }
+
+        /// <summary>
+        ///  If no options exists in cache save those from appsettings, if options are present in cache load those
+        /// </summary>
+        public RateLimitOptions GetSetOptionsInCache()
+        {
+            if (_options.StoreOptionsInCache)
+            {
+                var opt = _store.GetOptions(_options.GetOptionsKey());
+
+                if (opt == null)
+                {
+                    _store.SaveOptions(_options.GetOptionsKey(), _options);
+                }
+                else
+                {
+                    _options = opt;
+                }
+            }
+            return _options;            
         }
     }
 }

@@ -17,15 +17,7 @@ namespace KestrelRateLimit
 
         public void SaveCounter(string id, RateLimitCounter counter, TimeSpan expirationTime)
         {
-            //RateLimitCounter stored;
-            //if (!_memoryCache.TryGetValue(id, out stored))
-            //{
-                _memoryCache.Set(id, counter, new MemoryCacheEntryOptions().SetAbsoluteExpiration(expirationTime));
-            //}
-            //else
-            //{
-            //    _memoryCache.Set(id, counter);
-            //}
+            _memoryCache.Set(id, counter, new MemoryCacheEntryOptions().SetAbsoluteExpiration(expirationTime));
         }
 
         public bool CounterExists(string id)
@@ -50,9 +42,27 @@ namespace KestrelRateLimit
             _memoryCache.Remove(id);
         }
 
-        public void ClearCounters()
+        public void SaveOptions(string id, RateLimitOptions options)
         {
-            throw new NotImplementedException();
+            _memoryCache.Set(id, options);
+        }
+
+        public bool OptionsExists(string id)
+        {
+            RateLimitOptions options;
+            return _memoryCache.TryGetValue(id, out options);
+        }
+
+        public RateLimitOptions GetOptions(string id)
+        {
+            RateLimitOptions options;
+            _memoryCache.TryGetValue(id, out options);
+            return options;
+        }
+
+        public void RemoveOptions(string id)
+        {
+            _memoryCache.Remove(id);
         }
     }
 }

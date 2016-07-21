@@ -81,6 +81,8 @@ namespace KestrelRateLimit
 
         public List<RateLimits> ClientRules { get; set; } = new List<RateLimits>();
 
+        public bool StoreOptionsInCache { get; set; }
+
         /// <summary>
         /// Gets or sets the app name, used to compose the cache key
         /// </summary>
@@ -89,12 +91,12 @@ namespace KestrelRateLimit
         /// <summary>
         /// Gets or sets the counter prefix, used to compose the cache key
         /// </summary>
-        public string RateLimitCounterPrefix { get; set; } = "counter";
+        public string RateLimitCounterPrefix { get; set; } = "ratelimit_counter";
 
         /// <summary>
-        /// Gets or sets the policy prefix, used to compose the cache key
+        /// Gets or sets the options prefix, used to compose the cache key
         /// </summary>
-        public string RateLimitPolicyPrefix { get; set; } = "policy";
+        public string RateLimitOptionsPrefix { get; set; } = "ratelimit_options";
 
         /// <summary>
         /// Returns key prefix for rate limits
@@ -108,15 +110,17 @@ namespace KestrelRateLimit
         }
 
         /// <summary>
-        /// Returns the policy key (global prefix + policy key suffix)
+        /// Returns the options key (global prefix + policy key suffix)
         /// </summary>
         /// <returns>
         /// The policy key.
         /// </returns>
-        public string GetPolicyKey()
+        public string GetOptionsKey()
         {
-            return ApplicationName + RateLimitPolicyPrefix;
+            return ApplicationName + RateLimitOptionsPrefix;
         }
+
+
 
         public Dictionary<RateLimitPeriod, long> ComputeRates()
         {
