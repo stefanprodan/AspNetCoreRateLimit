@@ -1,0 +1,22 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "ASP.NET Core rate limiting middle-ware",
+  "authors": [ "Stefan Prodan" ],
+  "packOptions": {
+    "tags": [ "aspnetcore", "rate-limit", "throttle" ],
+    "owners": [ "Stefan Prodan" ],
+    "licenseUrl": "https://github.com/stefanprodan/KestrelRateLimit/blob/master/LICENSE.md",
+    "repository": { "url": "https://github.com/stefanprodan/KestrelRateLimit" }
+  },
+  "dependencies": {
+    "Microsoft.AspNetCore.Mvc": "1.0.0",
+    "NETStandard.Library": "1.6.0",
+    "Newtonsoft.Json": "9.0.1"
+  },
+
+  "frameworks": {
+    "netstandard1.6": {
+      "imports": "dnxcore50"
+    }
+  }
+}
