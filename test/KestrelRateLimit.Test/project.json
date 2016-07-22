@@ -1,0 +1,34 @@
+﻿{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "dotnet-test-xunit": "1.0.0-rc2-*",
+    "KestrelRateLimit": {
+      "version": "1.0.0-*",
+      "target": "project"
+    },
+    "KestrelRateLimit.Demo": {
+      "version": "1.0.0-*",
+      "target": "project"
+    },
+    "Microsoft.AspNetCore.TestHost": "1.0.0",
+    "xunit": "2.1.0"
+  },
+  "testRunner": "xunit",
+  "frameworks": {
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0",
+          "type": "platform"
+        },
+        "System.Diagnostics.Process": "4.1.0-*",
+        "System.Diagnostics.TraceSource": "4.0.0"
+      },
+      "imports": [
+        "dotnet5.6",
+        "portable-net451+win8"
+      ]
+    }
+  }
+}
