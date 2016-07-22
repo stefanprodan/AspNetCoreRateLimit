@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace KestrelRateLimit
 {
-    public class IPAddressUtil
+    public class IpAddressUtil
     {
         public static bool ContainsIp(List<string> ipRules, string clientIp)
         {
@@ -15,7 +13,7 @@ namespace KestrelRateLimit
             {
                 foreach (var rule in ipRules)
                 {
-                    var range = new IPAddressRange(rule);
+                    var range = new IpAddressRange(rule);
                     if (range.Contains(ip))
                     {
                         return true;
@@ -34,7 +32,7 @@ namespace KestrelRateLimit
             {
                 foreach (var r in ipRules)
                 {
-                    var range = new IPAddressRange(r);
+                    var range = new IpAddressRange(r);
                     if (range.Contains(ip))
                     {
                         rule = r;

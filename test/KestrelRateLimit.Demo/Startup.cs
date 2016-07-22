@@ -43,7 +43,7 @@ namespace KestrelRateLimit.Demo
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            app.UseRateLimiting();
+            app.UseIpRateLimiting();
 
             app.UseMvc();
         }

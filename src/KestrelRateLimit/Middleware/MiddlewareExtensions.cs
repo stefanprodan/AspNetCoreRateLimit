@@ -9,14 +9,14 @@ namespace KestrelRateLimit
 {
     public static class MiddlewareExtensions
     {
-        public static IApplicationBuilder UseRateLimiting(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseIpRateLimiting(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<RateLimitMiddleware>();
+            return builder.UseMiddleware<IpRateLimitMiddleware>();
         }
 
-        public static IApplicationBuilder UseRateLimiting(this IApplicationBuilder builder, RateLimitOptions options)
+        public static IApplicationBuilder UseIpRateLimiting(this IApplicationBuilder builder, RateLimitOptions options)
         {
-            return builder.UseMiddleware<RateLimitMiddleware>(new OptionsWrapper<RateLimitOptions>(options));
+            return builder.UseMiddleware<IpRateLimitMiddleware>(new OptionsWrapper<RateLimitOptions>(options));
         }
     }
 }

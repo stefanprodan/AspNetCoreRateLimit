@@ -146,7 +146,7 @@ namespace KestrelRateLimit.Tests
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, apiValuesPath);
                 request.Headers.Add("X-Real-IP", ip);
-                request.Headers.Add("X-ClientId", clientId);
+                request.Headers.Add("X-Bypass", clientId);
 
                 var response = await Client.SendAsync(request);
                 responseStatusCode = (int)response.StatusCode;

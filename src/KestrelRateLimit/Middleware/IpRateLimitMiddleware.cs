@@ -11,30 +11,30 @@ using System.Threading.Tasks;
 
 namespace KestrelRateLimit
 {
-    public class RateLimitMiddleware
+    public class IpRateLimitMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
-        private readonly IIPAddressParser _ipParser;
+        private readonly IIpAddressParser _ipParser;
         private readonly IMemoryCache _memoryCache;
-        private readonly RateLimitProcessor _processor;
+        private readonly IpRateLimitProcessor _processor;
 
         private RateLimitOptions _options;
 
-        public RateLimitMiddleware(RequestDelegate next, 
+        public IpRateLimitMiddleware(RequestDelegate next, 
             IOptions<RateLimitOptions> options, 
             ILoggerFactory loggerFactory,
             IMemoryCache memoryCache = null,
-            IIPAddressParser ipParser = null
+            IIpAddressParser ipParser = null
             )
         {
             _next = next;
             _options = options.Value;
-            _logger = loggerFactory.CreateLogger<RateLimitMiddleware>();
-            _ipParser = ipParser != null ? ipParser : new ReversRoxyIpParser();
+            _logger = loggerFactory.CreateLogger<IpRateLimitMiddleware>();
+            _ipParser = ipParser != null ? ipParser : new ReversProxyIpParser(_options.RealIpHeader);
             _memoryCache = memoryCache;
 
-            _processor = new RateLimitProcessor(_options, new MemoryCacheRateLimitStore(_memoryCache), _ipParser);
+            _processor = new IpRateLimitProcessor(_options, new MemoryCacheRateLimitStore(_memoryCache), _ipParser);
             _options = _processor.GetSetOptionsInCache();
         }
 
@@ -48,7 +48,7 @@ namespace KestrelRateLimit
             }
 
             // check if rate limiting is enabled
-                if (_options == null || (!_options.EnableEndpointRateLimiting && !_options.EnableClientRateLimiting && !_options.EnableIpRateLimiting))
+                if (_options == null)
             {
                 await _next.Invoke(context);
                 return;
@@ -104,7 +104,7 @@ namespace KestrelRateLimit
                         var retryAfter = _processor.RetryAfterFrom(counterData.Counter.Timestamp, rateLimitPeriod);
 
                         // log blocked request
-                        _logger.LogInformation($"Request {identity.HttpVerb}:{identity.Endpoint} from IP {identity.ClientIp} ClienId {identity.ClientKey} has been blocked, quota {rateLimit}/{rateLimitPeriod.ToString()} exceeded by {counterData.Counter.TotalRequests}. Rule {counterData.Key}");
+                        _logger.LogInformation($"Request {identity.HttpVerb}:{identity.Endpoint} from IP {identity.ClientIp} ClienId {identity.ClientBypassKey} has been blocked, quota {rateLimit}/{rateLimitPeriod.ToString()} exceeded by {counterData.Counter.TotalRequests}. Rule {counterData.Key}");
 
                         var message = string.IsNullOrEmpty(_options.QuotaExceededMessage) ? $"API calls quota exceeded! maximum admitted {rateLimit} per {rateLimitPeriod.ToString()}. Rule {counterData.Key}" : _options.QuotaExceededMessage;
 
@@ -123,17 +123,33 @@ namespace KestrelRateLimit
         public virtual RequestIdentity SetIdentity(HttpContext httpContext)
         {
             var clientId = "anon";
-            if (httpContext.Request.Headers.Keys.Contains(_options.ClientIdHeader))
+            if (httpContext.Request.Headers.Keys.Contains(_options.BypassHeader))
             {
-                clientId = httpContext.Request.Headers[_options.ClientIdHeader].First();
+                clientId = httpContext.Request.Headers[_options.BypassHeader].First();
+            }
+
+            var clientIp = string.Empty;
+            try
+            {
+                var ip = _ipParser.GetClientIp(httpContext);
+                if(ip == null)
+                {
+                    throw new Exception("IpRateLimitMiddleware can't parse caller IP");
+                }
+
+                clientIp = ip.ToString();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("IpRateLimitMiddleware can't parse caller IP", ex);
             }
 
             return new RequestIdentity
             {
-                ClientIp = _ipParser.GetClientIp(httpContext).ToString(),
+                ClientIp = clientIp,
                 Endpoint = httpContext.Request.Path.ToString().ToLowerInvariant(),
                 HttpVerb = httpContext.Request.Method.ToLowerInvariant(),
-                ClientKey = clientId
+                ClientBypassKey = clientId
             };
         }
 

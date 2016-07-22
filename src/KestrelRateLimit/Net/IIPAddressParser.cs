@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using System.Net;
 
 namespace KestrelRateLimit
 {
-    public interface IIPAddressParser
+    public interface IIpAddressParser
     {
         bool ContainsIp(List<string> ipRules, string clientIp);
 

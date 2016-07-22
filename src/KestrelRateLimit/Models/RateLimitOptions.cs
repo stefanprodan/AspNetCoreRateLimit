@@ -33,16 +33,6 @@ namespace KestrelRateLimit
         public long PerWeek { get; set; }
 
         /// <summary>
-        /// Enables IP rate limiting
-        /// </summary>
-        public bool EnableIpRateLimiting { get; set; } = true;
-
-        /// <summary>
-        /// Enables client rate limiting based on ClientIdHeader
-        /// </summary>
-        public bool EnableClientRateLimiting { get; set; }
-
-        /// <summary>
         /// Enables endpoint rate limiting based URL path and HTTP verb
         /// </summary>
         public bool EnableEndpointRateLimiting { get; set; }
@@ -53,9 +43,14 @@ namespace KestrelRateLimit
         public bool StackBlockedRequests { get; set; }
 
         /// <summary>
-        /// Gets or sets the HTTP header of the client unique identifier, by default is X-ClientId
+        /// Gets or sets the HTTP header used to store the bypass secret key, by default is X-Bypass
         /// </summary>
-        public string ClientIdHeader { get; set; } = "X-ClientId";
+        public string BypassHeader { get; set; } = "X-Bypass";
+
+        /// <summary>
+        /// Gets or sets the HTTP header of the real ip header injected by reverse proxy, by default is X-Real-IP
+        /// </summary>
+        public string RealIpHeader { get; set; } = "X-Real-IP";
 
         /// <summary>
         /// Gets or sets the HTTP Status code returned when rate limiting occurs, by default value is set to 429 (Too Many Requests)
@@ -77,9 +72,11 @@ namespace KestrelRateLimit
 
         public List<RateLimits> EndpointRules { get; set; } = new List<RateLimits>();
 
+        /// <summary>
+        /// Holds the bypass keys
+        /// </summary>
         public List<string> ClientWhitelist { get; set; }
 
-        public List<RateLimits> ClientRules { get; set; } = new List<RateLimits>();
 
         public bool StoreOptionsInCache { get; set; }
 
@@ -119,8 +116,6 @@ namespace KestrelRateLimit
         {
             return ApplicationName + RateLimitOptionsPrefix;
         }
-
-
 
         public Dictionary<RateLimitPeriod, long> ComputeRates()
         {

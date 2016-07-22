@@ -1,22 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace KestrelRateLimit
 {
-    public class RemoteIpParser : IIPAddressParser
+    public class RemoteIpParser : IIpAddressParser
     {
         public bool ContainsIp(List<string> ipRules, string clientIp)
         {
-            return IPAddressUtil.ContainsIp(ipRules, clientIp);
+            return IpAddressUtil.ContainsIp(ipRules, clientIp);
         }
 
         public bool ContainsIp(List<string> ipRules, string clientIp, out string rule)
         {
-            return IPAddressUtil.ContainsIp(ipRules, clientIp, out rule);
+            return IpAddressUtil.ContainsIp(ipRules, clientIp, out rule);
         }
 
         public virtual IPAddress GetClientIp(HttpContext context)
@@ -26,7 +23,7 @@ namespace KestrelRateLimit
 
         public IPAddress ParseIp(string ipAddress)
         {
-            return IPAddressUtil.ParseIp(ipAddress);
+            return IpAddressUtil.ParseIp(ipAddress);
         }
     }
 }

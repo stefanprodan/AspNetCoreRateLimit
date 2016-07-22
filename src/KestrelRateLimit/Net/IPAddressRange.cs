@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace KestrelRateLimit
 {
@@ -17,19 +15,19 @@ namespace KestrelRateLimit
     /// "192.168.0.0/255.255.255.0" 
     /// "192.168.0.0-192.168.0.255"
     /// </example>
-    public class IPAddressRange
+    public class IpAddressRange
     {
         public IPAddress Begin { get; set; }
 
         public IPAddress End { get; set; }
 
-        public IPAddressRange()
+        public IpAddressRange()
         {
             this.Begin = new IPAddress(0L);
             this.End = new IPAddress(0L);
         }
 
-        public IPAddressRange(string ipRangeString)
+        public IpAddressRange(string ipRangeString)
         {
             // remove all spaces.
             ipRangeString = ipRangeString.Replace(" ", "");

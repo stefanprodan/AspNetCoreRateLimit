@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 
 namespace KestrelRateLimit
 {
-    public class RateLimitProcessor
+    public class IpRateLimitProcessor
     {
         private RateLimitOptions _options;
         private readonly IRateLimitStore _store;
-        private readonly IIPAddressParser _ipParser;
+        private readonly IIpAddressParser _ipParser;
         private static readonly object _processLocker = new object();
 
-        public RateLimitProcessor(RateLimitOptions options, IRateLimitStore store, IIPAddressParser ipParser)
+        public IpRateLimitProcessor(RateLimitOptions options, IRateLimitStore store, IIpAddressParser ipParser)
         {
             _options = options;
             _store = store;
@@ -38,19 +38,9 @@ namespace KestrelRateLimit
                 }
             }
 
-            // apply custom rate limit for clients that will override endpoint limits
-            if (_options.EnableClientRateLimiting &&  _options.ClientRules != null && _options.ClientRules.Select(x => x.Value).Contains(identity.ClientKey))
-            {
-                var limit = _options.ClientRules.First(x => x.Value == identity.ClientKey).GetLimit(rateLimitPeriod);
-                if (limit > 0)
-                {
-                    rateLimit = limit;
-                }
-            }
-
             // enforce ip rate limit as is most specific 
             string ipRule = null;
-            if (_options.EnableIpRateLimiting && _options.IpRules != null && _ipParser.ContainsIp(_options.IpRules.Select(x => x.Value).ToList(), identity.ClientIp, out ipRule))
+            if (_options.IpRules != null && _ipParser.ContainsIp(_options.IpRules.Select(x => x.Value).ToList(), identity.ClientIp, out ipRule))
             {
                 var limit = _options.IpRules.First(x => x.Value == ipRule).GetLimit(rateLimitPeriod);
                 if (limit > 0)
@@ -129,20 +119,14 @@ namespace KestrelRateLimit
 
         public bool IsWhitelisted(RequestIdentity requestIdentity)
         {
-            if (_options.EnableIpRateLimiting)
+            if (_options.ClientWhitelist != null && _options.ClientWhitelist.Contains(requestIdentity.ClientBypassKey))
             {
-                if (_options.IpWhitelist != null && _ipParser.ContainsIp(_options.IpWhitelist, requestIdentity.ClientIp))
-                {
-                    return true;
-                }
+                return true;
             }
 
-            if (_options.EnableClientRateLimiting)
+            if (_options.IpWhitelist != null && _ipParser.ContainsIp(_options.IpWhitelist, requestIdentity.ClientIp))
             {
-                if (_options.ClientWhitelist != null && _options.ClientWhitelist.Contains(requestIdentity.ClientKey))
-                {
-                    return true;
-                }
+                return true;
             }
 
             if (_options.EnableEndpointRateLimiting)
@@ -166,15 +150,7 @@ namespace KestrelRateLimit
                     _options.GetCounterKey()
                 };
 
-            if (_options.EnableIpRateLimiting)
-            {
-                keyValues.Add(requestIdentity.ClientIp);
-            }
-
-            if (_options.EnableClientRateLimiting)
-            {
-                keyValues.Add(requestIdentity.ClientKey);
-            }
+            keyValues.Add(requestIdentity.ClientIp);
 
             if (_options.EnableEndpointRateLimiting)
             {
