@@ -10,6 +10,8 @@ namespace KestrelRateLimit.Tests
 {
     public class IpRateLimitTests: IClassFixture<IpRateLimitFixture<Demo.Startup>>
     {
+        private const string apiValuesPath = "/api/values";
+
         public IpRateLimitTests(IpRateLimitFixture<Demo.Startup> fixture)
         {
             Client = fixture.Client;
@@ -24,14 +26,34 @@ namespace KestrelRateLimit.Tests
         public async Task SpecificIpRule(string ip)
         {
             // Arrange
-            var path = "/api/values";
+            int responseStatusCode = 0;
+
+            // Act    
+            for (int i = 0; i < 4; i++)
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, apiValuesPath);
+                request.Headers.Add("X-Real-IP", ip);
+
+                var response = await Client.SendAsync(request);
+                responseStatusCode = (int)response.StatusCode;
+            }
+
+            // Assert
+            Assert.Equal(429, responseStatusCode);
+        }
+
+        [Fact]
+        public async Task GlobalIpRule()
+        {
+            // Arrange
+            var ip = "84.247.85.228";
 
             int responseStatusCode = 0;
 
             // Act    
             for (int i = 0; i < 4; i++)
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, path);
+                var request = new HttpRequestMessage(HttpMethod.Get, apiValuesPath);
                 request.Headers.Add("X-Real-IP", ip);
 
                 var response = await Client.SendAsync(request);
@@ -46,7 +68,6 @@ namespace KestrelRateLimit.Tests
         public async Task WhitelistIp()
         {
             // Arrange
-            var path = "/api/values";
             var ip = "::1";
 
             int responseStatusCode = 0;
@@ -54,7 +75,7 @@ namespace KestrelRateLimit.Tests
             // Act    
             for (int i = 0; i < 4; i++)
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, path);
+                var request = new HttpRequestMessage(HttpMethod.Get, apiValuesPath);
                 request.Headers.Add("X-Real-IP", ip);
 
                 var response = await Client.SendAsync(request);
@@ -72,7 +93,6 @@ namespace KestrelRateLimit.Tests
         public async Task SpecificPathRule(string verb)
         {
             // Arrange
-            var path = "/api/values";
             var ip = "84.247.85.227";
 
             int responseStatusCode = 0;
@@ -80,7 +100,7 @@ namespace KestrelRateLimit.Tests
             // Act    
             for (int i = 0; i < 4; i++)
             {
-                var request = new HttpRequestMessage(new HttpMethod(verb), path);
+                var request = new HttpRequestMessage(new HttpMethod(verb), apiValuesPath);
                 request.Headers.Add("X-Real-IP", ip);
 
                 var response = await Client.SendAsync(request);
@@ -89,6 +109,50 @@ namespace KestrelRateLimit.Tests
 
             // Assert
             Assert.Equal(429, responseStatusCode);
+        }
+
+        [Fact]
+        public async Task WhitelistPath()
+        {
+            // Arrange
+            var ip = "84.247.85.229";
+            int responseStatusCode = 0;
+
+            // Act    
+            for (int i = 0; i < 4; i++)
+            {
+                var request = new HttpRequestMessage(HttpMethod.Delete, apiValuesPath);
+                request.Headers.Add("X-Real-IP", ip);
+
+                var response = await Client.SendAsync(request);
+                responseStatusCode = (int)response.StatusCode;
+            }
+
+            // Assert
+            Assert.NotEqual(429, responseStatusCode);
+        }
+
+        [Fact]
+        public async Task WhitelistClient()
+        {
+            // Arrange
+            var ip = "84.247.85.230";
+            var clientId = "cl-id-1";
+            int responseStatusCode = 0;
+
+            // Act    
+            for (int i = 0; i < 4; i++)
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, apiValuesPath);
+                request.Headers.Add("X-Real-IP", ip);
+                request.Headers.Add("X-ClientId", clientId);
+
+                var response = await Client.SendAsync(request);
+                responseStatusCode = (int)response.StatusCode;
+            }
+
+            // Assert
+            Assert.Equal(200, responseStatusCode);
         }
 
         [Fact]
