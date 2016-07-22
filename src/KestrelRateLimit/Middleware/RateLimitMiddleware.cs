@@ -130,7 +130,7 @@ namespace KestrelRateLimit
 
             return new RequestIdentity
             {
-                ClientIp = httpContext.Connection.RemoteIpAddress?.ToString(),
+                ClientIp = _ipParser.GetClientIp(httpContext).ToString(),
                 Endpoint = httpContext.Request.Path.ToString().ToLowerInvariant(),
                 HttpVerb = httpContext.Request.Method.ToLowerInvariant(),
                 ClientKey = clientId
