@@ -11,6 +11,7 @@ namespace KestrelRateLimit.Tests
     public class IpRateLimitTests: IClassFixture<IpRateLimitFixture<Demo.Startup>>
     {
         private const string apiValuesPath = "/api/values";
+        private const string apiRateLimitPath = "/api/ratelimit";
 
         public IpRateLimitTests(IpRateLimitFixture<Demo.Startup> fixture)
         {
@@ -156,20 +157,44 @@ namespace KestrelRateLimit.Tests
         }
 
         [Fact]
-        public async Task ReadOptionsFromCache()
+        public async Task ReadOptions()
         {
             // Arrange
-            var path = "/api/ratelimit";
             var ip = "::1";
             var keyword = "84.247.85.224";
 
             // Act
-            var request = new HttpRequestMessage(HttpMethod.Get, path);
+            var request = new HttpRequestMessage(HttpMethod.Get, apiRateLimitPath);
             request.Headers.Add("X-Real-IP", ip);
 
-            // Assert
             var response = await Client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Contains(keyword, content);
+        }
+
+        [Fact]
+        public async Task UpdateOptions()
+        {
+            // Arrange
+            var ip = "::1";
+            var keyword = "testupdate";
+
+            // Act
+            var updateRequest = new HttpRequestMessage(HttpMethod.Post, apiRateLimitPath);
+            updateRequest.Headers.Add("X-Real-IP", ip);
+
+            var updateResponse = await Client.SendAsync(updateRequest);
+            Assert.True(updateResponse.IsSuccessStatusCode);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, apiRateLimitPath);
+            request.Headers.Add("X-Real-IP", ip);
+
+            var response = await Client.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            // Assert
             Assert.Contains(keyword, content);
         }
     }
