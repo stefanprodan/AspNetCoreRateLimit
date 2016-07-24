@@ -22,6 +22,8 @@ namespace KestrelRateLimit
         /// </summary>
         public string Period { get; set; }
 
+        public TimeSpan? PeriodTimespan { get; set; }
+
         /// <summary>
         /// Maximum number of requests that a client can make in a defined period
         /// </summary>

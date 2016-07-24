@@ -5,6 +5,6 @@
         bool Exists(string id);
         ClientRateLimitPolicy Get(string id);
         void Remove(string id);
-        void Set(string id, ClientRateLimitPolicy counter);
+        void Set(string id, ClientRateLimitPolicy policy);
     }
 }

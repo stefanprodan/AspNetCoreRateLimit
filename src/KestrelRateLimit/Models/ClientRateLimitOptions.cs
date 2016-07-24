@@ -39,5 +39,17 @@ namespace KestrelRateLimit
         /// Gets or sets the policy prefix, used to compose the client policy cache key
         /// </summary>
         public string ClientPolicyPrefix { get; set; } = "crlp";
+
+        /// <summary>
+        /// Gets or sets a value indicating whether all requests, including the rejected ones, should be stacked in this order: day, hour, min, sec
+        /// </summary>
+        public bool StackBlockedRequests { get; set; }
+
+        /// <summary>
+        /// Enables endpoint rate limiting based URL path and HTTP verb
+        /// </summary>
+        public bool EnableEndpointRateLimiting { get; set; }
+
+        public List<ClientRateLimitPolicy> ClientRateLimits { get; set; }
     }
 }

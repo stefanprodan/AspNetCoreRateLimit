@@ -12,9 +12,9 @@ namespace KestrelRateLimit
             _memoryCache = memoryCache;
         }
 
-        public void Set(string id, ClientRateLimitPolicy counter)
+        public void Set(string id, ClientRateLimitPolicy policy)
         {
-            _memoryCache.Set(id, counter);
+            _memoryCache.Set(id, policy);
         }
 
         public bool Exists(string id)

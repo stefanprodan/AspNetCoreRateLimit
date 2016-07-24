@@ -32,6 +32,10 @@ namespace KestrelRateLimit.Demo
 
             //configure rate limiting middle-ware
             services.Configure<RateLimitOptions>(Configuration.GetSection("RateLimiting"));
+            services.Configure<ClientRateLimitOptions>(Configuration.GetSection("ClientRateLimiting"));
+
+            var opt = new ClientRateLimitOptions();
+            ConfigurationBinder.Bind(Configuration.GetSection("ClientRateLimiting"), opt);
 
             // Add framework services.
             services.AddMvc();
@@ -44,6 +48,7 @@ namespace KestrelRateLimit.Demo
             loggerFactory.AddDebug();
 
             app.UseIpRateLimiting();
+            app.UseClientRateLimiting();
 
             app.UseMvc();
         }
