@@ -31,11 +31,11 @@ namespace KestrelRateLimit
             if (policy != null)
             {
                 // search for rules with endpoints like "*" and "*:/matching_path"
-                var pathLimits = policy.Limits.Where(l => $"*:{identity.Path}".Contains(l.Endpoint)).AsEnumerable();
+                var pathLimits = policy.Limits.Where(l => $"*:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
                 limits.AddRange(pathLimits);
 
                 // search for rules with endpoints like "matching_verb:/matching_path"
-                var verbLimits = policy.Limits.Where(l => $"{identity.HttpVerb}:{identity.Path}".Contains(l.Endpoint)).AsEnumerable();
+                var verbLimits = policy.Limits.Where(l => $"{identity.HttpVerb}:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
                 limits.AddRange(verbLimits);
             }
             

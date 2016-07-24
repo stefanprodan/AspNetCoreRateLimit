@@ -59,12 +59,39 @@ namespace KestrelRateLimit
                 return;
             }
 
-            var timeSpan = TimeSpan.FromSeconds(1);
 
-            _processor.GetMatchingLimits(identity);
+            foreach (var rule in _processor.GetMatchingLimits(identity))
+            {
+                if(rule.Limit > 0)
+                {
+                    // increment counter
+                    var counter = _processor.ProcessRequest(identity, rule);
+
+                    // check if key expired
+                    if (counter.Timestamp + rule.PeriodTimespan.Value < DateTime.UtcNow)
+                    {
+                        continue;
+                    }
+
+                    // check if limit is reached
+                    if (counter.TotalRequests > rule.Limit)
+                    {
+                        //compute retry after value
+                        var retryAfter = _processor.RetryAfterFrom(counter.Timestamp, rule);
+
+                        // log blocked request
+                        _logger.LogInformation($"Request {identity.HttpVerb}:{identity.Path} from ClienId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}.");
+
+                        var message = string.IsNullOrEmpty(_options.QuotaExceededMessage) ? $"API calls quota exceeded! maximum admitted {rule.Limit} per {rule.Period}. Rule {rule.Endpoint}" : _options.QuotaExceededMessage;
+
+                        // break execution
+                        await QuotaExceededResponse(context, _options.HttpStatusCode, message, retryAfter);
+                        return;
+                    }
+                }
+            }
 
             await _next.Invoke(context);
-
         }
 
         public virtual ClientRequestIdentity SetIdentity(HttpContext httpContext)
