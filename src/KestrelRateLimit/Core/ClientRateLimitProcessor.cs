@@ -140,6 +140,27 @@ namespace KestrelRateLimit
             return false;
         }
 
+        public RateLimitHeaders GetRateLimitHeaders(ClientRequestIdentity requestIdentity, ClientRateLimit rule)
+        {
+            var headers = new RateLimitHeaders();
+            var counterId = ComputeCounterKey(requestIdentity, rule);
+            var entry = _counterStore.Get(counterId);
+            if (entry.HasValue)
+            {
+                headers.Reset = (entry.Value.Timestamp + ConvertToTimeSpan(rule.Period)).ToString();
+                headers.Limit = rule.Period;
+                headers.Remaining = (rule.Limit - entry.Value.TotalRequests).ToString();
+            }
+            else
+            {
+                headers.Reset = (DateTime.UtcNow + ConvertToTimeSpan(rule.Period)).ToString();
+                headers.Limit = rule.Period;
+                headers.Remaining = rule.Limit .ToString();
+            }
+
+            return headers;
+        }
+
         public string RetryAfterFrom(DateTime timestamp, ClientRateLimit rule)
         {
             var secondsPast = Convert.ToInt32((DateTime.UtcNow - timestamp).TotalSeconds);

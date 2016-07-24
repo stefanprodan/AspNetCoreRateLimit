@@ -59,8 +59,9 @@ namespace KestrelRateLimit
                 return;
             }
 
+            var rules = _processor.GetMatchingLimits(identity);
 
-            foreach (var rule in _processor.GetMatchingLimits(identity))
+            foreach (var rule in rules)
             {
                 if(rule.Limit > 0)
                 {
@@ -89,6 +90,16 @@ namespace KestrelRateLimit
                         return;
                     }
                 }
+            }
+
+            //set X-Rate-Limit headers for the longest period
+            if(rules.Any())
+            {
+                var rule = rules.OrderByDescending(x => x.PeriodTimespan.Value).First();
+                var headers = _processor.GetRateLimitHeaders(identity, rule);
+                headers.Context = context;
+
+                context.Response.OnStarting(SetRateLimitHeaders, state: headers);
             }
 
             await _next.Invoke(context);
