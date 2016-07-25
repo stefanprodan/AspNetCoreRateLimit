@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace KestrelRateLimit
 {
@@ -12,7 +9,7 @@ namespace KestrelRateLimit
         /// </summary>
         /// <example>
         /// get:/api/values
-        /// /api/values
+        /// *:/api/values
         /// *
         /// </example>
         public string Endpoint { get; set; }
