@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace KestrelRateLimit.Demo.Controllers
 {
     [Route("api/[controller]")]
-    public class ItemsController : Controller
+    public class ClientsController : Controller
     {
         // GET api/values
         [HttpGet]

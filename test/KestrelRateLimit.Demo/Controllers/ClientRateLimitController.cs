@@ -23,13 +23,13 @@ namespace KestrelRateLimit.Demo.Controllers
         [HttpGet]
         public ClientRateLimitPolicy Get()
         {
-            return _clientPolicyStore.Get($"{_options.ClientPolicyPrefix}_anon");
+            return _clientPolicyStore.Get($"{_options.ClientPolicyPrefix}_cl-key-1");
         }
 
         [HttpPost]
         public void Post()
         {
-            var id = $"{_options.ClientPolicyPrefix}_anon";
+            var id = $"{_options.ClientPolicyPrefix}_cl-key-1";
             var anonPolicy = _clientPolicyStore.Get(id);
             anonPolicy.Rules.Add(new ClientRateLimit
             {

@@ -5,12 +5,12 @@ using System.Net.Http;
 
 namespace KestrelRateLimit.Tests
 {
-    public class IpRateLimitFixtureBase<TStartup> : IDisposable
+    public class RateLimitFixtureBase<TStartup> : IDisposable
         where TStartup : class
     {
         private readonly TestServer _server;
 
-        public IpRateLimitFixtureBase(string baseUri)
+        public RateLimitFixtureBase(string baseUri)
         {
             var builder = new WebHostBuilder().UseStartup<TStartup>();
             _server = new TestServer(builder);
