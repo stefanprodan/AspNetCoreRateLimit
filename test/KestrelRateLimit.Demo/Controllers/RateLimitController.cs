@@ -13,11 +13,13 @@ namespace KestrelRateLimit.Demo.Controllers
     {
         private readonly MemoryCacheRateLimitStore _rateLimitStore;
         private readonly RateLimitOptions _optionsFromAppsettings;
+        private readonly IClientPolicyStore _clientPolicyStore;
 
-        public RateLimitController(IOptions<RateLimitOptions> optionsAccessor, IMemoryCache memoryCache)
+        public RateLimitController(IOptions<RateLimitOptions> optionsAccessor, IMemoryCache memoryCache, IClientPolicyStore clientPolicyStore)
         {
             _optionsFromAppsettings = optionsAccessor.Value;
             _rateLimitStore = new MemoryCacheRateLimitStore(memoryCache);
+            _clientPolicyStore = clientPolicyStore;
         }
 
         [HttpGet]

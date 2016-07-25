@@ -13,23 +13,21 @@ namespace KestrelRateLimit
     {
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
-        private readonly IMemoryCache _memoryCache;
         private readonly ClientRateLimitProcessor _processor;
-
         private readonly ClientRateLimitOptions _options;
 
-        public ClientRateLimitMiddleware(RequestDelegate next, 
-            IOptions<ClientRateLimitOptions> options, 
-            ILoggerFactory loggerFactory,
-            IMemoryCache memoryCache = null
+        public ClientRateLimitMiddleware(RequestDelegate next,
+            IOptions<ClientRateLimitOptions> options,
+            IRateLimitCounterStore counterStore,
+            IClientPolicyStore policyStore,
+            ILoggerFactory loggerFactory
             )
         {
             _next = next;
             _options = options.Value;
-            _logger = loggerFactory.CreateLogger<IpRateLimitMiddleware>();
-            _memoryCache = memoryCache;
+            _logger = loggerFactory.CreateLogger<ClientRateLimitMiddleware>();
 
-            _processor = new ClientRateLimitProcessor(_options, new MemoryCacheRateLimitCounterStore(_memoryCache), new MemoryCacheClientPolicyStore(_memoryCache));
+            _processor = new ClientRateLimitProcessor(_options, counterStore, policyStore);
         }
 
         public async Task Invoke(HttpContext context)
@@ -44,7 +42,7 @@ namespace KestrelRateLimit
             //save limits from options, for debug purposes only
             if (_options.ClientRules != null && _options.ClientRules.Any())
             {
-                _processor.SaveClientRateLimits(_options.ClientRules);
+                _processor.SaveClientRules(_options.ClientRules);
             }
 
             // compute identity from request

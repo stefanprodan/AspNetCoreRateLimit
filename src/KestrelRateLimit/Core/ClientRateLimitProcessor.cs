@@ -53,28 +53,28 @@ namespace KestrelRateLimit
             // search for matching general rules
             if (_options.GeneralRules != null)
             {
-                // get the most restrictive general limit for each period 
-                var generalLimits = _options.GeneralRules.GroupBy(l => l.Period).Select(l => l.OrderBy(x => x.Limit)).Select(l => l.First()).ToList();
-
                 var matchingGeneralLimits = new List<ClientRateLimit>();
                 if (_options.EnableEndpointRateLimiting)
                 {
                     // search for rules with endpoints like "*" and "*:/matching_path" in general rules
-                    var pathLimits = generalLimits.Where(l => $"*:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
+                    var pathLimits = _options.GeneralRules.Where(l => $"*:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
                     matchingGeneralLimits.AddRange(pathLimits);
 
                     // search for rules with endpoints like "matching_verb:/matching_path" in general rules
-                    var verbLimits = generalLimits.Where(l => $"{identity.HttpVerb}:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
+                    var verbLimits = _options.GeneralRules.Where(l => $"{identity.HttpVerb}:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
                     matchingGeneralLimits.AddRange(verbLimits);
                 }
                 else
                 {
                     //ignore endpoint rules and search for global rules in general rules
-                    var genericLimits = generalLimits.Where(l => l.Endpoint == "*").AsEnumerable();
+                    var genericLimits = _options.GeneralRules.Where(l => l.Endpoint == "*").AsEnumerable();
                     matchingGeneralLimits.AddRange(genericLimits);
                 }
 
-                foreach (var generalLimit in matchingGeneralLimits)
+                // get the most restrictive general limit for each period 
+                var generalLimits = matchingGeneralLimits.GroupBy(l => l.Period).Select(l => l.OrderBy(x => x.Limit)).Select(l => l.First()).ToList();
+
+                foreach (var generalLimit in generalLimits)
                 {
                     // add general rule if no specific rule is declared for the specified period
                     if(!limits.Exists(l => l.Period == generalLimit.Period))
@@ -118,7 +118,6 @@ namespace KestrelRateLimit
 
             return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
         }
-          
 
         public RateLimitCounter ProcessRequest(ClientRequestIdentity requestIdentity, ClientRateLimit rule)
         {
@@ -205,9 +204,9 @@ namespace KestrelRateLimit
             return retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
 
-        public void SaveClientRateLimits(List<ClientRateLimitPolicy> limits)
+        public void SaveClientRules(List<ClientRateLimitPolicy> rules)
         {
-            foreach (var item in limits)
+            foreach (var item in rules)
             {
                 _policyStore.Set($"{_options.ClientPolicyPrefix}_{item.ClientId}", new ClientRateLimitPolicy { ClientId = item.ClientId, Rules = item.Rules });
             }
@@ -225,7 +224,7 @@ namespace KestrelRateLimit
                 case "h": return TimeSpan.FromHours(double.Parse(value));
                 case "m": return TimeSpan.FromMinutes(double.Parse(value));
                 case "s": return TimeSpan.FromSeconds(double.Parse(value));
-                default: return TimeSpan.FromSeconds(double.Parse(value));
+                default: throw new FormatException($"{timeSpan} can't be converted to TimeSpan, unknown type {type}");
             }
         }
     }
