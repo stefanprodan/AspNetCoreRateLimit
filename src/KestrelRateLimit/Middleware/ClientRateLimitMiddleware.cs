@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -43,7 +41,7 @@ namespace KestrelRateLimit
                 return;
             }
 
-            //save limits from options
+            //save limits from options, for debug purposes only
             if (_options.ClientRateLimits != null && _options.ClientRateLimits.Any())
             {
                 _processor.SaveClientRateLimits(_options.ClientRateLimits);
@@ -59,7 +57,7 @@ namespace KestrelRateLimit
                 return;
             }
 
-            var rules = _processor.GetMatchingLimits(identity);
+            var rules = _processor.GetMatchingRules(identity);
 
             foreach (var rule in rules)
             {
@@ -81,9 +79,9 @@ namespace KestrelRateLimit
                         var retryAfter = _processor.RetryAfterFrom(counter.Timestamp, rule);
 
                         // log blocked request
-                        _logger.LogInformation($"Request {identity.HttpVerb}:{identity.Path} from ClienId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}.");
+                        _logger.LogInformation($"Request {identity.HttpVerb}:{identity.Path} from ClienId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Rule {rule.Endpoint}");
 
-                        var message = string.IsNullOrEmpty(_options.QuotaExceededMessage) ? $"API calls quota exceeded! maximum admitted {rule.Limit} per {rule.Period}. Rule {rule.Endpoint}" : _options.QuotaExceededMessage;
+                        var message = string.IsNullOrEmpty(_options.QuotaExceededMessage) ? $"API calls quota exceeded! maximum admitted {rule.Limit} per {rule.Period}." : _options.QuotaExceededMessage;
 
                         // break execution
                         await QuotaExceededResponse(context, _options.HttpStatusCode, message, retryAfter);

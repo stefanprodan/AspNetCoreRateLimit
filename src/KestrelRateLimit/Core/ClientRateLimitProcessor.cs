@@ -22,21 +22,29 @@ namespace KestrelRateLimit
             _policyStore = policyStore;
         }
 
-
-        public List<ClientRateLimit> GetMatchingLimits(ClientRequestIdentity identity)
+        public List<ClientRateLimit> GetMatchingRules(ClientRequestIdentity identity)
         {
             var limits = new List<ClientRateLimit>();
             var policy = _policyStore.Get($"{_options.ClientPolicyPrefix}_{identity.ClientId}");
 
             if (policy != null)
             {
-                // search for rules with endpoints like "*" and "*:/matching_path"
-                var pathLimits = policy.Limits.Where(l => $"*:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
-                limits.AddRange(pathLimits);
+                if (_options.EnableEndpointRateLimiting)
+                {
+                    // search for rules with endpoints like "*" and "*:/matching_path"
+                    var pathLimits = policy.Limits.Where(l => $"*:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
+                    limits.AddRange(pathLimits);
 
-                // search for rules with endpoints like "matching_verb:/matching_path"
-                var verbLimits = policy.Limits.Where(l => $"{identity.HttpVerb}:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
-                limits.AddRange(verbLimits);
+                    // search for rules with endpoints like "matching_verb:/matching_path"
+                    var verbLimits = policy.Limits.Where(l => $"{identity.HttpVerb}:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
+                    limits.AddRange(verbLimits);
+                }
+                else
+                {
+                    //ignore endpoint rules and search for global rules only
+                    var genericLimits = policy.Limits.Where(l => l.Endpoint == "*").AsEnumerable();
+                    limits.AddRange(genericLimits);
+                }
             }
             
             if (_options.GlobalLimits != null)
