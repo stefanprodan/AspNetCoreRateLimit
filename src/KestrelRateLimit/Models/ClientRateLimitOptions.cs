@@ -7,7 +7,7 @@ namespace KestrelRateLimit
 {
     public class ClientRateLimitOptions
     {
-        public List<ClientRateLimit> GlobalLimits { get; set; }
+        public List<ClientRateLimit> GeneralRules { get; set; }
 
         public List<string> EndpointWhitelist { get; set; }
 
@@ -50,6 +50,6 @@ namespace KestrelRateLimit
         /// </summary>
         public bool EnableEndpointRateLimiting { get; set; }
 
-        public List<ClientRateLimitPolicy> ClientRateLimits { get; set; }
+        public List<ClientRateLimitPolicy> ClientRules { get; set; }
     }
 }

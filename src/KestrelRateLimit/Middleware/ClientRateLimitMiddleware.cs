@@ -42,9 +42,9 @@ namespace KestrelRateLimit
             }
 
             //save limits from options, for debug purposes only
-            if (_options.ClientRateLimits != null && _options.ClientRateLimits.Any())
+            if (_options.ClientRules != null && _options.ClientRules.Any())
             {
-                _processor.SaveClientRateLimits(_options.ClientRateLimits);
+                _processor.SaveClientRateLimits(_options.ClientRules);
             }
 
             // compute identity from request

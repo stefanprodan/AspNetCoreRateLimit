@@ -32,29 +32,57 @@ namespace KestrelRateLimit
                 if (_options.EnableEndpointRateLimiting)
                 {
                     // search for rules with endpoints like "*" and "*:/matching_path"
-                    var pathLimits = policy.Limits.Where(l => $"*:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
+                    var pathLimits = policy.Rules.Where(l => $"*:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
                     limits.AddRange(pathLimits);
 
                     // search for rules with endpoints like "matching_verb:/matching_path"
-                    var verbLimits = policy.Limits.Where(l => $"{identity.HttpVerb}:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
+                    var verbLimits = policy.Rules.Where(l => $"{identity.HttpVerb}:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
                     limits.AddRange(verbLimits);
                 }
                 else
                 {
                     //ignore endpoint rules and search for global rules only
-                    var genericLimits = policy.Limits.Where(l => l.Endpoint == "*").AsEnumerable();
+                    var genericLimits = policy.Rules.Where(l => l.Endpoint == "*").AsEnumerable();
                     limits.AddRange(genericLimits);
                 }
-            }
-            
-            if (_options.GlobalLimits != null)
-            {
-                // add global limits
-                limits.AddRange(_options.GlobalLimits);
             }
 
             // get the most restrictive limit for each period 
             limits = limits.GroupBy(l => l.Period).Select(l => l.OrderBy(x => x.Limit)).Select(l => l.First()).ToList();
+
+            // search for matching general rules
+            if (_options.GeneralRules != null)
+            {
+                // get the most restrictive general limit for each period 
+                var generalLimits = _options.GeneralRules.GroupBy(l => l.Period).Select(l => l.OrderBy(x => x.Limit)).Select(l => l.First()).ToList();
+
+                var matchingGeneralLimits = new List<ClientRateLimit>();
+                if (_options.EnableEndpointRateLimiting)
+                {
+                    // search for rules with endpoints like "*" and "*:/matching_path" in general rules
+                    var pathLimits = generalLimits.Where(l => $"*:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
+                    matchingGeneralLimits.AddRange(pathLimits);
+
+                    // search for rules with endpoints like "matching_verb:/matching_path" in general rules
+                    var verbLimits = generalLimits.Where(l => $"{identity.HttpVerb}:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
+                    matchingGeneralLimits.AddRange(verbLimits);
+                }
+                else
+                {
+                    //ignore endpoint rules and search for global rules in general rules
+                    var genericLimits = generalLimits.Where(l => l.Endpoint == "*").AsEnumerable();
+                    matchingGeneralLimits.AddRange(genericLimits);
+                }
+
+                foreach (var generalLimit in matchingGeneralLimits)
+                {
+                    // add general rule if no specific rule is declared for the specified period
+                    if(!limits.Exists(l => l.Period == generalLimit.Period))
+                    {
+                        limits.Add(generalLimit);
+                    }
+                }
+            }
 
             foreach (var item in limits)
             {
@@ -181,7 +209,7 @@ namespace KestrelRateLimit
         {
             foreach (var item in limits)
             {
-                _policyStore.Set($"{_options.ClientPolicyPrefix}_{item.ClientId}", new ClientRateLimitPolicy { ClientId = item.ClientId, Limits = item.Limits });
+                _policyStore.Set($"{_options.ClientPolicyPrefix}_{item.ClientId}", new ClientRateLimitPolicy { ClientId = item.ClientId, Rules = item.Rules });
             }
         }
 

@@ -8,6 +8,6 @@ namespace KestrelRateLimit
     public class ClientRateLimitPolicy
     {
         public string ClientId { get; set; }
-        public List<ClientRateLimit> Limits { get; set; }
+        public List<ClientRateLimit> Rules { get; set; }
     }
 }
