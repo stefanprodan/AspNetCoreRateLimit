@@ -204,14 +204,6 @@ namespace KestrelRateLimit
             return retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
 
-        public void SaveClientRules(List<ClientRateLimitPolicy> rules)
-        {
-            foreach (var item in rules)
-            {
-                _policyStore.Set($"{_options.ClientPolicyPrefix}_{item.ClientId}", new ClientRateLimitPolicy { ClientId = item.ClientId, Rules = item.Rules });
-            }
-        }
-
         public static TimeSpan ConvertToTimeSpan(string timeSpan)
         {
             var l = timeSpan.Length - 1;

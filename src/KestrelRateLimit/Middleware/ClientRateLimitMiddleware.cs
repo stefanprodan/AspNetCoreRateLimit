@@ -39,12 +39,6 @@ namespace KestrelRateLimit
                 return;
             }
 
-            //save limits from options, for debug purposes only
-            if (_options.ClientRules != null && _options.ClientRules.Any())
-            {
-                _processor.SaveClientRules(_options.ClientRules);
-            }
-
             // compute identity from request
             var identity = SetIdentity(context);
 

@@ -49,7 +49,5 @@ namespace KestrelRateLimit
         /// Enables endpoint rate limiting based URL path and HTTP verb
         /// </summary>
         public bool EnableEndpointRateLimiting { get; set; }
-
-        public List<ClientRateLimitPolicy> ClientRules { get; set; }
     }
 }
