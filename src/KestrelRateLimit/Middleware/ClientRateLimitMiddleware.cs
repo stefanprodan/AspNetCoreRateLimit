@@ -29,22 +29,22 @@ namespace KestrelRateLimit
             _processor = new ClientRateLimitProcessor(_options, counterStore, policyStore);
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(HttpContext httpContext)
         {
             // check if rate limiting is enabled
             if (_options == null)
             {
-                await _next.Invoke(context);
+                await _next.Invoke(httpContext);
                 return;
             }
 
             // compute identity from request
-            var identity = SetIdentity(context);
+            var identity = SetIdentity(httpContext);
 
             // check white list
             if (_processor.IsWhitelisted(identity))
             {
-                await _next.Invoke(context);
+                await _next.Invoke(httpContext);
                 return;
             }
 
@@ -70,12 +70,10 @@ namespace KestrelRateLimit
                         var retryAfter = _processor.RetryAfterFrom(counter.Timestamp, rule);
 
                         // log blocked request
-                        _logger.LogInformation($"Request {identity.HttpVerb}:{identity.Path} from ClienId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Blocked by rule {rule.Endpoint}, TraceIdentifier {context.TraceIdentifier}.");
-
-                        var message = string.IsNullOrEmpty(_options.QuotaExceededMessage) ? $"API calls quota exceeded! maximum admitted {rule.Limit} per {rule.Period}." : _options.QuotaExceededMessage;
-
+                        LogBlockedRequest(httpContext, identity, counter, rule);
+                  
                         // break execution
-                        await QuotaExceededResponse(context, _options.HttpStatusCode, message, retryAfter);
+                        await ReturnQuotaExceededResponse(httpContext, rule, retryAfter);
                         return;
                     }
                 }
@@ -86,12 +84,12 @@ namespace KestrelRateLimit
             {
                 var rule = rules.OrderByDescending(x => x.PeriodTimespan.Value).First();
                 var headers = _processor.GetRateLimitHeaders(identity, rule);
-                headers.Context = context;
+                headers.Context = httpContext;
 
-                context.Response.OnStarting(SetRateLimitHeaders, state: headers);
+                httpContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
             }
 
-            await _next.Invoke(context);
+            await _next.Invoke(httpContext);
         }
 
         public virtual ClientRequestIdentity SetIdentity(HttpContext httpContext)
@@ -110,11 +108,18 @@ namespace KestrelRateLimit
             };
         }
 
-        public virtual Task QuotaExceededResponse(HttpContext httpContext, int statusCode, string message, string retryAfter)
+        public virtual Task ReturnQuotaExceededResponse(HttpContext httpContext, ClientRateLimit rule, string retryAfter)
         {
+            var message = string.IsNullOrEmpty(_options.QuotaExceededMessage) ? $"API calls quota exceeded! maximum admitted {rule.Limit} per {rule.Period}." : _options.QuotaExceededMessage;
+
             httpContext.Response.Headers["Retry-After"] = retryAfter;
-            httpContext.Response.StatusCode = statusCode;
+            httpContext.Response.StatusCode = _options.HttpStatusCode;
             return httpContext.Response.WriteAsync(message);
+        }
+
+        public virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, ClientRateLimit rule)
+        {
+            _logger.LogInformation($"Request {identity.HttpVerb}:{identity.Path} from ClienId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Blocked by rule {rule.Endpoint}, TraceIdentifier {httpContext.TraceIdentifier}.");
         }
 
         private Task SetRateLimitHeaders(object rateLimitHeaders)
