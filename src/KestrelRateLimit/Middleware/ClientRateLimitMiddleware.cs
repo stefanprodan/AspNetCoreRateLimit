@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-
 namespace KestrelRateLimit
 {
     public class ClientRateLimitMiddleware
@@ -108,7 +107,7 @@ namespace KestrelRateLimit
             };
         }
 
-        public virtual Task ReturnQuotaExceededResponse(HttpContext httpContext, ClientRateLimit rule, string retryAfter)
+        public virtual Task ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitRule rule, string retryAfter)
         {
             var message = string.IsNullOrEmpty(_options.QuotaExceededMessage) ? $"API calls quota exceeded! maximum admitted {rule.Limit} per {rule.Period}." : _options.QuotaExceededMessage;
 
@@ -117,7 +116,7 @@ namespace KestrelRateLimit
             return httpContext.Response.WriteAsync(message);
         }
 
-        public virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, ClientRateLimit rule)
+        public virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule)
         {
             _logger.LogInformation($"Request {identity.HttpVerb}:{identity.Path} from ClienId {identity.ClientId} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Blocked by rule {rule.Endpoint}, TraceIdentifier {httpContext.TraceIdentifier}.");
         }

@@ -31,7 +31,7 @@ namespace KestrelRateLimit.Demo.Controllers
         {
             var id = $"{_options.ClientPolicyPrefix}_cl-key-1";
             var anonPolicy = _clientPolicyStore.Get(id);
-            anonPolicy.Rules.Add(new ClientRateLimit
+            anonPolicy.Rules.Add(new RateLimitRule
             {
                 Endpoint = "*/api/testpolicyupdate",
                 Period = "1h",

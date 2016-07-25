@@ -2,7 +2,7 @@
 
 namespace KestrelRateLimit
 {
-    public class ClientRateLimit
+    public class RateLimitRule
     {
         /// <summary>
         /// HTTP verb and path 

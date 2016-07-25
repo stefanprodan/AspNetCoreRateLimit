@@ -23,7 +23,6 @@ namespace KestrelRateLimit.Tests
 
         [Theory]
         [InlineData("GET")]
-        [InlineData("POST")]
         [InlineData("PUT")]
         public async Task SpecificRule(string verb)
         {
