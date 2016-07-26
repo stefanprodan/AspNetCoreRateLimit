@@ -10,7 +10,7 @@ namespace KestrelRateLimit
     public class ClientRateLimitMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ILogger _logger;
+        private readonly ILogger<ClientRateLimitMiddleware> _logger;
         private readonly ClientRateLimitProcessor _processor;
         private readonly ClientRateLimitOptions _options;
 
@@ -18,12 +18,12 @@ namespace KestrelRateLimit
             IOptions<ClientRateLimitOptions> options,
             IRateLimitCounterStore counterStore,
             IClientPolicyStore policyStore,
-            ILoggerFactory loggerFactory
+            ILogger<ClientRateLimitMiddleware> logger
             )
         {
             _next = next;
             _options = options.Value;
-            _logger = loggerFactory.CreateLogger<ClientRateLimitMiddleware>();
+            _logger = logger;
 
             _processor = new ClientRateLimitProcessor(_options, counterStore, policyStore);
         }
