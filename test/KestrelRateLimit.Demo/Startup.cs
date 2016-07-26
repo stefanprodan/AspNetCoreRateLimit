@@ -30,14 +30,17 @@ namespace KestrelRateLimit.Demo
             services.AddOptions();
             services.AddMemoryCache();
 
-            //configure rate limiting middle-ware
-            services.Configure<RateLimitOptions>(Configuration.GetSection("RateLimiting"));
+            //configure ip rate limiting middle-ware
+            services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
+            services.Configure<IpRateLimitPolicies>(Configuration.GetSection("IpRateLimitPolicies"));
+            services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+            services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
 
             //configure client rate limiting middleware
             services.Configure<ClientRateLimitOptions>(Configuration.GetSection("ClientRateLimiting"));
             services.Configure<ClientRateLimitPolicies>(Configuration.GetSection("ClientRateLimitPolicies"));
             services.AddSingleton<IClientPolicyStore, MemoryCacheClientPolicyStore>();
-            services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+            //services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
 
             var opt = new ClientRateLimitOptions();
             ConfigurationBinder.Bind(Configuration.GetSection("ClientRateLimiting"), opt);

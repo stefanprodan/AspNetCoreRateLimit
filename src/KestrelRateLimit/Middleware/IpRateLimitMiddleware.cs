@@ -16,15 +16,14 @@ namespace KestrelRateLimit
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
         private readonly IIpAddressParser _ipParser;
-        private readonly IMemoryCache _memoryCache;
         private readonly IpRateLimitProcessor _processor;
-
-        private RateLimitOptions _options;
+        private readonly IpRateLimitOptions _options;
 
         public IpRateLimitMiddleware(RequestDelegate next, 
-            IOptions<RateLimitOptions> options, 
+            IOptions<IpRateLimitOptions> options,
+            IRateLimitCounterStore counterStore,
+            IIpPolicyStore policyStore,
             ILoggerFactory loggerFactory,
-            IMemoryCache memoryCache = null,
             IIpAddressParser ipParser = null
             )
         {
@@ -32,100 +31,79 @@ namespace KestrelRateLimit
             _options = options.Value;
             _logger = loggerFactory.CreateLogger<IpRateLimitMiddleware>();
             _ipParser = ipParser != null ? ipParser : new ReversProxyIpParser(_options.RealIpHeader);
-            _memoryCache = memoryCache;
 
-            _processor = new IpRateLimitProcessor(_options, new MemoryCacheRateLimitStore(_memoryCache), _ipParser);
-            _options = _processor.GetSetOptionsInCache();
+            _processor = new IpRateLimitProcessor(_options, counterStore, policyStore, _ipParser);
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(HttpContext httpContext)
         {
-            //_logger.LogInformation($"Rate limiting request {context.Request.Method.ToLowerInvariant()}:{context.Request.Path.ToString().ToUpperInvariant()} id {context.TraceIdentifier}");
-
-            if (context.Request.Headers.Keys.Contains("X-Rate-Limit-Info"))
-            {
-                context.Response.OnStarting(SetRateLimitHeaders, state: new RateLimitHeaders { Context = context, Limit = "per day", Remaining = "200", Reset = "2016.07.21 12:30:59" });
-            }
-
             // check if rate limiting is enabled
-                if (_options == null)
+            if (_options == null)
             {
-                await _next.Invoke(context);
+                await _next.Invoke(httpContext);
                 return;
             }
 
             // compute identity from request
-            var identity = SetIdentity(context);
+            var identity = SetIdentity(httpContext);
 
             // check white list
             if (_processor.IsWhitelisted(identity))
             {
-                await _next.Invoke(context);
+                await _next.Invoke(httpContext);
                 return;
             }
 
-            var timeSpan = TimeSpan.FromSeconds(1);
+            var rules = _processor.GetMatchingRules(identity);
 
-            // get default rates
-            var defRates = _processor.RatesWithDefaults(_options.ComputeRates().ToList());
-            if (_options.StackBlockedRequests)
+            foreach (var rule in rules)
             {
-                // all requests including the rejected ones will stack in this order: week, day, hour, min, sec
-                // if a client hits the hour limit then the minutes and seconds counters will expire and will eventually get erased from cache
-                defRates.Reverse();
-            }
-
-            // apply policy
-            foreach (var rate in defRates)
-            {
-                var rateLimitPeriod = rate.Key;
-                var rateLimit = rate.Value;
-
-                timeSpan = _processor.GetTimeSpanFromPeriod(rateLimitPeriod);
-
-                // apply global rules
-                _processor.ApplyRules(identity, timeSpan, rateLimitPeriod, ref rateLimit);
-
-                if (rateLimit > 0)
+                if (rule.Limit > 0)
                 {
                     // increment counter
-                    var counterData = _processor.ProcessRequest(identity, timeSpan, rateLimitPeriod);
+                    var counter = _processor.ProcessRequest(identity, rule);
 
                     // check if key expired
-                    if (counterData.Counter.Timestamp + timeSpan < DateTime.UtcNow)
+                    if (counter.Timestamp + rule.PeriodTimespan.Value < DateTime.UtcNow)
                     {
                         continue;
                     }
 
                     // check if limit is reached
-                    if (counterData.Counter.TotalRequests > rateLimit)
+                    if (counter.TotalRequests > rule.Limit)
                     {
                         //compute retry after value
-                        var retryAfter = _processor.RetryAfterFrom(counterData.Counter.Timestamp, rateLimitPeriod);
+                        var retryAfter = _processor.RetryAfterFrom(counter.Timestamp, rule);
 
                         // log blocked request
-                        _logger.LogInformation($"Request {identity.HttpVerb}:{identity.Endpoint} from IP {identity.ClientIp} ClienId {identity.ClientBypassKey} has been blocked, quota {rateLimit}/{rateLimitPeriod.ToString()} exceeded by {counterData.Counter.TotalRequests}. Rule {counterData.Key}");
-
-                        var message = string.IsNullOrEmpty(_options.QuotaExceededMessage) ? $"API calls quota exceeded! maximum admitted {rateLimit} per {rateLimitPeriod.ToString()}. Rule {counterData.Key}" : _options.QuotaExceededMessage;
+                        LogBlockedRequest(httpContext, identity, counter, rule);
 
                         // break execution
-                        await QuotaExceededResponse(context, _options.HttpStatusCode, message, retryAfter);
+                        await ReturnQuotaExceededResponse(httpContext, rule, retryAfter);
                         return;
                     }
                 }
             }
 
-            await _next.Invoke(context);
+            //set X-Rate-Limit headers for the longest period
+            if (rules.Any())
+            {
+                var rule = rules.OrderByDescending(x => x.PeriodTimespan.Value).First();
+                var headers = _processor.GetRateLimitHeaders(identity, rule);
+                headers.Context = httpContext;
 
-            //_logger.LogInformation($"Finished handling request {context.TraceIdentifier}");
+                httpContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
+            }
+
+            await _next.Invoke(httpContext);
         }
 
-        public virtual RequestIdentity SetIdentity(HttpContext httpContext)
+        public virtual ClientRequestIdentity SetIdentity(HttpContext httpContext)
         {
             var clientId = "anon";
-            if (httpContext.Request.Headers.Keys.Contains(_options.BypassHeader))
+            if (httpContext.Request.Headers.Keys.Contains(_options.ClientIdHeader))
             {
-                clientId = httpContext.Request.Headers[_options.BypassHeader].First();
+                clientId = httpContext.Request.Headers[_options.ClientIdHeader].First();
             }
 
             var clientIp = string.Empty;
@@ -144,20 +122,27 @@ namespace KestrelRateLimit
                 throw new Exception("IpRateLimitMiddleware can't parse caller IP", ex);
             }
 
-            return new RequestIdentity
+            return new ClientRequestIdentity
             {
                 ClientIp = clientIp,
-                Endpoint = httpContext.Request.Path.ToString().ToLowerInvariant(),
+                Path = httpContext.Request.Path.ToString().ToLowerInvariant(),
                 HttpVerb = httpContext.Request.Method.ToLowerInvariant(),
-                ClientBypassKey = clientId
+                ClientId = clientId
             };
         }
 
-        public virtual Task QuotaExceededResponse(HttpContext httpContext, int statusCode, string message, string retryAfter)
+        public virtual Task ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitRule rule, string retryAfter)
         {
+            var message = string.IsNullOrEmpty(_options.QuotaExceededMessage) ? $"API calls quota exceeded! maximum admitted {rule.Limit} per {rule.Period}." : _options.QuotaExceededMessage;
+
             httpContext.Response.Headers["Retry-After"] = retryAfter;
-            httpContext.Response.StatusCode = statusCode;
+            httpContext.Response.StatusCode = _options.HttpStatusCode;
             return httpContext.Response.WriteAsync(message);
+        }
+
+        public virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule)
+        {
+            _logger.LogInformation($"Request {identity.HttpVerb}:{identity.Path} from IP {identity.ClientIp} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.TotalRequests}. Blocked by rule {rule.Endpoint}, TraceIdentifier {httpContext.TraceIdentifier}.");
         }
 
         private Task SetRateLimitHeaders(object rateLimitHeaders)

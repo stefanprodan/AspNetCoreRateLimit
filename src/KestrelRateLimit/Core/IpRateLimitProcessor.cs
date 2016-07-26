@@ -7,246 +7,139 @@ namespace KestrelRateLimit
 {
     public class IpRateLimitProcessor
     {
-        private RateLimitOptions _options;
-        private readonly IRateLimitStore _store;
+        private readonly IpRateLimitOptions _options;
+        private readonly IRateLimitCounterStore _counterStore;
+        private readonly IIpPolicyStore _policyStore;
         private readonly IIpAddressParser _ipParser;
+        private readonly RateLimitCore _core;
+
         private static readonly object _processLocker = new object();
 
-        public IpRateLimitProcessor(RateLimitOptions options, IRateLimitStore store, IIpAddressParser ipParser)
+        public IpRateLimitProcessor(IpRateLimitOptions options,
+           IRateLimitCounterStore counterStore,
+           IIpPolicyStore policyStore,
+           IIpAddressParser ipParser)
         {
             _options = options;
-            _store = store;
+            _counterStore = counterStore;
+            _policyStore = policyStore;
             _ipParser = ipParser;
+
+            _core = new RateLimitCore(true, options, _counterStore);
         }
 
-        public void ApplyRules(RequestIdentity identity, TimeSpan timeSpan, RateLimitPeriod rateLimitPeriod, ref long rateLimit)
+        public List<RateLimitRule> GetMatchingRules(ClientRequestIdentity identity)
         {
-            // apply endpoint rate limits
-            if (_options.EnableEndpointRateLimiting && _options.EndpointRules != null)
-            {
-                var pathWithVerb = $"{identity.HttpVerb}:{identity.Endpoint}".ToLowerInvariant();
-                var rules = _options.EndpointRules.Where(x => pathWithVerb.Contains(x.Value.ToLowerInvariant())).ToList();
-                if (rules.Any())
-                {
-                    // get the lower limit from all applying rules
-                    var customRate = (from r in rules let rateValue = r.GetLimit(rateLimitPeriod) select rateValue).Min();
+            var limits = new List<RateLimitRule>();
+            var policy = _policyStore.Get($"{_options.IpPolicyPrefix}_{identity.ClientIp}");
 
-                    if (customRate > 0)
+            if (policy != null)
+            {
+                if (_options.EnableEndpointRateLimiting)
+                {
+                    // search for rules with endpoints like "*" and "*:/matching_path"
+                    var pathLimits = policy.Rules.Where(l => $"*:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
+                    limits.AddRange(pathLimits);
+
+                    // search for rules with endpoints like "matching_verb:/matching_path"
+                    var verbLimits = policy.Rules.Where(l => $"{identity.HttpVerb}:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
+                    limits.AddRange(verbLimits);
+                }
+                else
+                {
+                    //ignore endpoint rules and search for global rules only
+                    var genericLimits = policy.Rules.Where(l => l.Endpoint == "*").AsEnumerable();
+                    limits.AddRange(genericLimits);
+                }
+            }
+
+            // get the most restrictive limit for each period 
+            limits = limits.GroupBy(l => l.Period).Select(l => l.OrderBy(x => x.Limit)).Select(l => l.First()).ToList();
+
+            // search for matching general rules
+            if (_options.GeneralRules != null)
+            {
+                var matchingGeneralLimits = new List<RateLimitRule>();
+                if (_options.EnableEndpointRateLimiting)
+                {
+                    // search for rules with endpoints like "*" and "*:/matching_path" in general rules
+                    var pathLimits = _options.GeneralRules.Where(l => $"*:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
+                    matchingGeneralLimits.AddRange(pathLimits);
+
+                    // search for rules with endpoints like "matching_verb:/matching_path" in general rules
+                    var verbLimits = _options.GeneralRules.Where(l => $"{identity.HttpVerb}:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
+                    matchingGeneralLimits.AddRange(verbLimits);
+                }
+                else
+                {
+                    //ignore endpoint rules and search for global rules in general rules
+                    var genericLimits = _options.GeneralRules.Where(l => l.Endpoint == "*").AsEnumerable();
+                    matchingGeneralLimits.AddRange(genericLimits);
+                }
+
+                // get the most restrictive general limit for each period 
+                var generalLimits = matchingGeneralLimits.GroupBy(l => l.Period).Select(l => l.OrderBy(x => x.Limit)).Select(l => l.First()).ToList();
+
+                foreach (var generalLimit in generalLimits)
+                {
+                    // add general rule if no specific rule is declared for the specified period
+                    if(!limits.Exists(l => l.Period == generalLimit.Period))
                     {
-                        rateLimit = customRate;
+                        limits.Add(generalLimit);
                     }
                 }
             }
 
-            // enforce ip rate limit as is most specific 
-            string ipRule = null;
-            if (_options.IpRules != null && _ipParser.ContainsIp(_options.IpRules.Select(x => x.Value).ToList(), identity.ClientIp, out ipRule))
+            foreach (var item in limits)
             {
-                var limit = _options.IpRules.First(x => x.Value == ipRule).GetLimit(rateLimitPeriod);
-                if (limit > 0)
-                {
-                    rateLimit = limit;
-                }
+                //parse period text into time spans
+                item.PeriodTimespan = _core.ConvertToTimeSpan(item.Period);
             }
+
+            limits = limits.OrderBy(l => l.PeriodTimespan).ToList();
+            if(_options.StackBlockedRequests)
+            {
+                limits.Reverse();   
+            }
+
+            return limits;
         }
 
-        public RateLimitEntry ProcessRequest(RequestIdentity requestIdentity, TimeSpan timeSpan, RateLimitPeriod period)
+        public bool IsWhitelisted(ClientRequestIdentity requestIdentity)
         {
-            var counter = new RateLimitCounter
-            {
-                Timestamp = DateTime.UtcNow,
-                TotalRequests = 1
-            };
-
-            var key = string.Empty;
-            var id = ComputeThrottleKey(requestIdentity, period, out key);
-
-            // serial reads and writes
-            lock (_processLocker)
-            {
-                var entry = _store.GetCounter(id);
-                if (entry.HasValue)
-                {
-                    // entry has not expired
-                    if (entry.Value.Timestamp + timeSpan >= DateTime.UtcNow)
-                    {
-                        // increment request count
-                        var totalRequests = entry.Value.TotalRequests + 1;
-
-                        // deep copy
-                        counter = new RateLimitCounter
-                        {
-                            Timestamp = entry.Value.Timestamp,
-                            TotalRequests = totalRequests
-                        };
-                    }
-                }
-
-                // stores: id (string) - timestamp (datetime) - total (long)
-                _store.SaveCounter(id, counter, timeSpan);
-            }
-
-            return new RateLimitEntry
-            {
-                Counter = counter,
-                Key = key,
-                Id = id
-            };
-        }
-
-        public string RetryAfterFrom(DateTime timestamp, RateLimitPeriod period)
-        {
-            var secondsPast = Convert.ToInt32((DateTime.UtcNow - timestamp).TotalSeconds);
-            var retryAfter = 1;
-            switch (period)
-            {
-                case RateLimitPeriod.Minute:
-                    retryAfter = 60;
-                    break;
-                case RateLimitPeriod.Hour:
-                    retryAfter = 60 * 60;
-                    break;
-                case RateLimitPeriod.Day:
-                    retryAfter = 60 * 60 * 24;
-                    break;
-                case RateLimitPeriod.Week:
-                    retryAfter = 60 * 60 * 24 * 7;
-                    break;
-            }
-            retryAfter = retryAfter > 1 ? retryAfter - secondsPast : 1;
-            return retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        }
-
-        public bool IsWhitelisted(RequestIdentity requestIdentity)
-        {
-            if (_options.ClientWhitelist != null && _options.ClientWhitelist.Contains(requestIdentity.ClientBypassKey))
-            {
-                return true;
-            }
-
             if (_options.IpWhitelist != null && _ipParser.ContainsIp(_options.IpWhitelist, requestIdentity.ClientIp))
             {
                 return true;
             }
 
-            if (_options.EnableEndpointRateLimiting)
+            if (_options.ClientWhitelist != null && _options.ClientWhitelist.Contains(requestIdentity.ClientId))
             {
-                var pathWithVerb = $"{requestIdentity.HttpVerb}:{requestIdentity.Endpoint}".ToLowerInvariant();
+                return true;
+            }
 
-                if (_options.EndpointWhitelist != null
-                    && _options.EndpointWhitelist.Any(x => pathWithVerb.Contains(x.ToLowerInvariant())))
-                {
+            if (_options.EndpointWhitelist != null && _options.EndpointWhitelist.Any())
+            {
+                if (_options.EndpointWhitelist.Any(x => $"{requestIdentity.HttpVerb}:{requestIdentity.Path}".ToLowerInvariant().Contains(x.ToLowerInvariant())) ||
+                    _options.EndpointWhitelist.Any(x => $"*:{requestIdentity.Path}".ToLowerInvariant().Contains(x.ToLowerInvariant())))
                     return true;
-                }
             }
 
             return false;
         }
 
-        public string ComputeThrottleKey(RequestIdentity requestIdentity, RateLimitPeriod period, out string key)
+        public RateLimitCounter ProcessRequest(ClientRequestIdentity requestIdentity, RateLimitRule rule)
         {
-            var keyValues = new List<string>()
-                {
-                    _options.GetCounterKey()
-                };
-
-            keyValues.Add(requestIdentity.ClientIp);
-
-            if (_options.EnableEndpointRateLimiting)
-            {
-                keyValues.Add($"{requestIdentity.HttpVerb}:{requestIdentity.Endpoint}");
-            }
-
-            keyValues.Add(period.ToString());
-
-            key = string.Join("_", keyValues);
-            var idBytes = System.Text.Encoding.UTF8.GetBytes(key);
-
-            byte[] hashBytes;
-
-            using (var algorithm = System.Security.Cryptography.SHA1.Create())
-            {
-                hashBytes = algorithm.ComputeHash(idBytes);
-            }
-
-            return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
+            return _core.ProcessRequest(requestIdentity, rule);
         }
 
-        public List<KeyValuePair<RateLimitPeriod, long>> RatesWithDefaults(List<KeyValuePair<RateLimitPeriod, long>> defRates)
+        public RateLimitHeaders GetRateLimitHeaders(ClientRequestIdentity requestIdentity, RateLimitRule rule)
         {
-            if (!defRates.Any(x => x.Key == RateLimitPeriod.Second))
-            {
-                defRates.Insert(0, new KeyValuePair<RateLimitPeriod, long>(RateLimitPeriod.Second, 0));
-            }
-
-            if (!defRates.Any(x => x.Key == RateLimitPeriod.Minute))
-            {
-                defRates.Insert(1, new KeyValuePair<RateLimitPeriod, long>(RateLimitPeriod.Minute, 0));
-            }
-
-            if (!defRates.Any(x => x.Key == RateLimitPeriod.Hour))
-            {
-                defRates.Insert(2, new KeyValuePair<RateLimitPeriod, long>(RateLimitPeriod.Hour, 0));
-            }
-
-            if (!defRates.Any(x => x.Key == RateLimitPeriod.Day))
-            {
-                defRates.Insert(3, new KeyValuePair<RateLimitPeriod, long>(RateLimitPeriod.Day, 0));
-            }
-
-            if (!defRates.Any(x => x.Key == RateLimitPeriod.Week))
-            {
-                defRates.Insert(4, new KeyValuePair<RateLimitPeriod, long>(RateLimitPeriod.Week, 0));
-            }
-
-            return defRates;
+            return _core.GetRateLimitHeaders(requestIdentity, rule);
         }
 
-        public TimeSpan GetTimeSpanFromPeriod(RateLimitPeriod rateLimitPeriod)
+        public string RetryAfterFrom(DateTime timestamp, RateLimitRule rule)
         {
-            var timeSpan = TimeSpan.FromSeconds(1);
-
-            switch (rateLimitPeriod)
-            {
-                case RateLimitPeriod.Second:
-                    timeSpan = TimeSpan.FromSeconds(1);
-                    break;
-                case RateLimitPeriod.Minute:
-                    timeSpan = TimeSpan.FromMinutes(1);
-                    break;
-                case RateLimitPeriod.Hour:
-                    timeSpan = TimeSpan.FromHours(1);
-                    break;
-                case RateLimitPeriod.Day:
-                    timeSpan = TimeSpan.FromDays(1);
-                    break;
-                case RateLimitPeriod.Week:
-                    timeSpan = TimeSpan.FromDays(7);
-                    break;
-            }
-
-            return timeSpan;
-        }
-
-        /// <summary>
-        ///  If no options exists in cache save those from appsettings, if options are present in cache load those
-        /// </summary>
-        public RateLimitOptions GetSetOptionsInCache()
-        {
-            if (_options.StoreOptionsInCache)
-            {
-                var opt = _store.GetOptions(_options.GetOptionsKey());
-
-                if (opt == null)
-                {
-                    _store.SaveOptions(_options.GetOptionsKey(), _options);
-                }
-                else
-                {
-                    _options = opt;
-                }
-            }
-            return _options;            
+            return _core.RetryAfterFrom(timestamp, rule);
         }
     }
 }

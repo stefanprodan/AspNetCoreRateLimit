@@ -31,11 +31,6 @@ namespace KestrelRateLimit
         public string RateLimitCounterPrefix { get; set; } = "crlc";
 
         /// <summary>
-        /// Gets or sets the policy prefix, used to compose the client policy cache key
-        /// </summary>
-        public string ClientPolicyPrefix { get; set; } = "crlp";
-
-        /// <summary>
         /// Gets or sets a value indicating whether all requests, including the rejected ones, should be stacked in this order: day, hour, min, sec
         /// </summary>
         public bool StackBlockedRequests { get; set; }

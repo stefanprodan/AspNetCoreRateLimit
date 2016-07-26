@@ -24,7 +24,10 @@ namespace KestrelRateLimit
 
         public string ComputeCounterKey(ClientRequestIdentity requestIdentity, RateLimitRule rule)
         {
-            var key = _ipRateLimiting ? $"{_options.RateLimitCounterPrefix}_{requestIdentity.ClientIp}_{rule.Period}" : $"{_options.RateLimitCounterPrefix}_{requestIdentity.ClientId}_{rule.Period}";
+            var key = _ipRateLimiting ? 
+                $"{_options.RateLimitCounterPrefix}_{requestIdentity.ClientIp}_{rule.Period}" :
+                $"{_options.RateLimitCounterPrefix}_{requestIdentity.ClientId}_{rule.Period}";
+
             if(_options.EnableEndpointRateLimiting)
             {
                 key += $"_{requestIdentity.HttpVerb}_{requestIdentity.Path}";
@@ -73,7 +76,7 @@ namespace KestrelRateLimit
                     }
                 }
 
-                // stores: id (string) - timestamp (datetime) - total (long)
+                // stores: id (string) - timestamp (datetime) - total_requests (long)
                 _counterStore.Set(counterId, counter, rule.PeriodTimespan.Value);
             }
 
