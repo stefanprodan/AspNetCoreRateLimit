@@ -15,30 +15,28 @@ namespace KestrelRateLimit
         {
             _memoryCache = memoryCache;
 
-            //save client rules defined in appsettings in cache on startup
-            if(options != null && options.Value != null && policies != null && policies.Value != null && policies.Value.IpRules != null)
+            //save ip rules defined in appsettings in cache on startup
+            if (options != null && options.Value != null && policies != null && policies.Value != null && policies.Value.IpRules != null)
             {
-                foreach (var rule in policies.Value.IpRules)
-                {
-                    Set($"{options.Value.IpPolicyPrefix}_{rule.Ip}", new IpRateLimitPolicy { Ip = rule.Ip, Rules = rule.Rules });
-                }
+                Set($"{options.Value.IpPolicyPrefix}", policies.Value);
+
             }
         }
 
-        public void Set(string id, IpRateLimitPolicy policy)
+        public void Set(string id, IpRateLimitPolicies policy)
         {
             _memoryCache.Set(id, policy);
         }
 
         public bool Exists(string id)
         {
-            IpRateLimitPolicy stored;
+            IpRateLimitPolicies stored;
             return _memoryCache.TryGetValue(id, out stored);
         }
 
-        public IpRateLimitPolicy Get(string id)
+        public IpRateLimitPolicies Get(string id)
         {
-            IpRateLimitPolicy stored;
+            IpRateLimitPolicies stored;
             if (_memoryCache.TryGetValue(id, out stored))
             {
                 return stored;

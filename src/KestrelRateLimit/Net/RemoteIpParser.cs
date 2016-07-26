@@ -6,6 +6,11 @@ namespace KestrelRateLimit
 {
     public class RemoteIpParser : IIpAddressParser
     {
+        public bool ContainsIp(string ipRule, string clientIp)
+        {
+            return IpAddressUtil.ContainsIp(ipRule, clientIp);
+        }
+
         public bool ContainsIp(List<string> ipRules, string clientIp)
         {
             return IpAddressUtil.ContainsIp(ipRules, clientIp);

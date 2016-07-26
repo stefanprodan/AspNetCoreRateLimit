@@ -6,6 +6,8 @@ namespace KestrelRateLimit
 {
     public interface IIpAddressParser
     {
+        bool ContainsIp(string ipRule, string clientIp);
+
         bool ContainsIp(List<string> ipRules, string clientIp);
 
         bool ContainsIp(List<string> ipRules, string clientIp, out string rule);

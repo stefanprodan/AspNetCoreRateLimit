@@ -6,6 +6,19 @@ namespace KestrelRateLimit
 {
     public class IpAddressUtil
     {
+        public static bool ContainsIp(string rule, string clientIp)
+        {
+            var ip = ParseIp(clientIp);
+
+            var range = new IpAddressRange(rule);
+            if (range.Contains(ip))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         public static bool ContainsIp(List<string> ipRules, string clientIp)
         {
             var ip = ParseIp(clientIp);

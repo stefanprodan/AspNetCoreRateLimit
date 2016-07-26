@@ -31,24 +31,32 @@ namespace KestrelRateLimit
         public List<RateLimitRule> GetMatchingRules(ClientRequestIdentity identity)
         {
             var limits = new List<RateLimitRule>();
-            var policy = _policyStore.Get($"{_options.IpPolicyPrefix}_{identity.ClientIp}");
+            var policies = _policyStore.Get($"{_options.IpPolicyPrefix}");
 
-            if (policy != null)
+            if (policies != null && policies.IpRules != null && policies.IpRules.Any())
             {
+                // search for rules with IP intervals containing client IP
+                var matchPolicies = policies.IpRules.Where(r => _ipParser.ContainsIp(r.Ip, identity.ClientIp)).AsEnumerable();
+                var rules = new List<RateLimitRule>();
+                foreach (var item in matchPolicies)
+                {
+                    rules.AddRange(item.Rules);
+                }
+
                 if (_options.EnableEndpointRateLimiting)
                 {
                     // search for rules with endpoints like "*" and "*:/matching_path"
-                    var pathLimits = policy.Rules.Where(l => $"*:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
+                    var pathLimits = rules.Where(l => $"*:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
                     limits.AddRange(pathLimits);
 
                     // search for rules with endpoints like "matching_verb:/matching_path"
-                    var verbLimits = policy.Rules.Where(l => $"{identity.HttpVerb}:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
+                    var verbLimits = rules.Where(l => $"{identity.HttpVerb}:{identity.Path}".ToLowerInvariant().Contains(l.Endpoint.ToLowerInvariant())).AsEnumerable();
                     limits.AddRange(verbLimits);
                 }
                 else
                 {
                     //ignore endpoint rules and search for global rules only
-                    var genericLimits = policy.Rules.Where(l => l.Endpoint == "*").AsEnumerable();
+                    var genericLimits = rules.Where(l => l.Endpoint == "*").AsEnumerable();
                     limits.AddRange(genericLimits);
                 }
             }
