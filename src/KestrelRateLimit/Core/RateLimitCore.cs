@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace KestrelRateLimit
 {
@@ -31,6 +28,9 @@ namespace KestrelRateLimit
             if(_options.EnableEndpointRateLimiting)
             {
                 key += $"_{requestIdentity.HttpVerb}_{requestIdentity.Path}";
+
+                // TODO: consider using the rule endpoint as key, this will allow to rate limit /api/values/1 and api/values/2 under same counter
+                //key += $"_{rule.Endpoint}";
             }
 
             var idBytes = System.Text.Encoding.UTF8.GetBytes(key);
