@@ -4,9 +4,14 @@
   "authors": [ "Stefan Prodan" ],
   "packOptions": {
     "tags": [ "aspnetcore", "rate-limit", "throttle" ],
-    "owners": [ "Stefan Prodan" ],
-    "licenseUrl": "https://github.com/stefanprodan/KestrelRateLimit/blob/master/LICENSE.md",
-    "repository": { "url": "https://github.com/stefanprodan/KestrelRateLimit" }
+    "projectUrl": "https://github.com/stefanprodan/KestrelRateLimit",
+    "licenseUrl": "http://opensource.org/licenses/MIT",
+    "summary": "KestrelRateLimit is an ASP.NET Core rate limiting solution designed to control the rate of requests that clients can make to a Web API or MVC app based on IP address or client ID.",
+    "copyright": "Copyright © Stefan Prodan 2016",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/stefanprodan/KestrelRateLimit"
+    }
   },
   "dependencies": {
     "Microsoft.AspNetCore.Mvc": "1.0.0",
@@ -16,6 +21,8 @@
   "frameworks": {
     "netstandard1.6": {
       "imports": "dnxcore50"
+    },
+    "net46": {
     }
   }
 }
