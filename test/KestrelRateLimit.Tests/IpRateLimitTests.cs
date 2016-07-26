@@ -11,7 +11,7 @@ namespace KestrelRateLimit.Tests
     public class IpRateLimitTests: IClassFixture<RateLimitFixture<Demo.Startup>>
     {
         private const string apiValuesPath = "/api/values";
-        private const string apiRateLimitPath = "/api/ratelimit";
+        private const string apiRateLimitPath = "/api/ipratelimit";
 
         public IpRateLimitTests(RateLimitFixture<Demo.Startup> fixture)
         {
@@ -30,7 +30,7 @@ namespace KestrelRateLimit.Tests
             int responseStatusCode = 0;
 
             // Act    
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 3; i++)
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, apiValuesPath);
                 request.Headers.Add("X-Real-IP", ip);
@@ -138,7 +138,7 @@ namespace KestrelRateLimit.Tests
         {
             // Arrange
             var ip = "84.247.85.230";
-            var clientId = "cl-id-1";
+            var clientId = "cl-key-1";
             int responseStatusCode = 0;
 
             // Act    
@@ -146,7 +146,7 @@ namespace KestrelRateLimit.Tests
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, apiValuesPath);
                 request.Headers.Add("X-Real-IP", ip);
-                request.Headers.Add("X-Bypass", clientId);
+                request.Headers.Add("X-ClientId", clientId);
 
                 var response = await Client.SendAsync(request);
                 responseStatusCode = (int)response.StatusCode;
@@ -154,24 +154,6 @@ namespace KestrelRateLimit.Tests
 
             // Assert
             Assert.Equal(200, responseStatusCode);
-        }
-
-        [Fact]
-        public async Task ReadOptions()
-        {
-            // Arrange
-            var ip = "::1";
-            var keyword = "84.247.85.224";
-
-            // Act
-            var request = new HttpRequestMessage(HttpMethod.Get, apiRateLimitPath);
-            request.Headers.Add("X-Real-IP", ip);
-
-            var response = await Client.SendAsync(request);
-            var content = await response.Content.ReadAsStringAsync();
-
-            // Assert
-            Assert.Contains(keyword, content);
         }
 
         [Fact]

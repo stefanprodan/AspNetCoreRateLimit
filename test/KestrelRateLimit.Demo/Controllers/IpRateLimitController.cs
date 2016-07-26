@@ -23,13 +23,26 @@ namespace KestrelRateLimit.Demo.Controllers
         [HttpGet]
         public IpRateLimitPolicies Get()
         {
-            return null;
+            return _ipPolicyStore.Get(_options.IpPolicyPrefix);
         }
 
         [HttpPost]
         public void Post()
         {
+            var pol = _ipPolicyStore.Get(_options.IpPolicyPrefix);
 
+            pol.IpRules.Add(new IpRateLimitPolicy
+            {
+                Ip = "8.8.4.4",
+                Rules = new List<RateLimitRule>(new RateLimitRule[] {
+                    new RateLimitRule {
+                        Endpoint = "*:/api/testupdate",
+                        Limit = 100,
+                        Period = "1d" }
+                })
+            });
+
+            _ipPolicyStore.Set(_options.IpPolicyPrefix, pol);
         }
     }
 }
