@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.TestHost;
 using System;
 using System.Net.Http;
 
-namespace KestrelRateLimit.Tests
+namespace AspNetCoreRateLimit.Tests
 {
     public class RateLimitFixtureBase<TStartup> : IDisposable
         where TStartup : class

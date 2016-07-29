@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using System;
 
-namespace KestrelRateLimit
+namespace AspNetCoreRateLimit
 {
     public class MemoryCacheRateLimitCounterStore: IRateLimitCounterStore
     {

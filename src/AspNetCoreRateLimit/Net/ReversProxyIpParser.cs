@@ -3,7 +3,7 @@ using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Http;
 
-namespace KestrelRateLimit
+namespace AspNetCoreRateLimit
 {
     public class ReversProxyIpParser : RemoteIpParser
     {

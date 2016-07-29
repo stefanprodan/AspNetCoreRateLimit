@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Net;
 
-namespace KestrelRateLimit
+namespace AspNetCoreRateLimit
 {
     public class IpAddressUtil
     {

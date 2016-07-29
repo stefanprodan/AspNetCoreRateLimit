@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace KestrelRateLimit
+namespace AspNetCoreRateLimit
 {
     /// <summary>
     /// Stores the initial access time and the numbers of calls made from that point

@@ -1,4 +1,4 @@
-﻿namespace KestrelRateLimit
+﻿namespace AspNetCoreRateLimit
 {
     public interface IClientPolicyStore
     {

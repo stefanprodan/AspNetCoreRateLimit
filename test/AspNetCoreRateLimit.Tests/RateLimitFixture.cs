@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace KestrelRateLimit.Tests
+namespace AspNetCoreRateLimit.Tests
 {
     public class RateLimitFixture<TStartup> : RateLimitFixtureBase<TStartup>
         where TStartup : class

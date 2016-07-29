@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 
-namespace KestrelRateLimit
+namespace AspNetCoreRateLimit
 {
     public class MemoryCacheIpPolicyStore : IIpPolicyStore
     {

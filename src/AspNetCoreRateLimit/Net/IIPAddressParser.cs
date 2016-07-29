@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using System.Net;
 
-namespace KestrelRateLimit
+namespace AspNetCoreRateLimit
 {
     public interface IIpAddressParser
     {

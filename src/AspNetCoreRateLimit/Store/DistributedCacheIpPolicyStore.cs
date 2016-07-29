@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
-namespace KestrelRateLimit
+namespace AspNetCoreRateLimit
 {
     public class DistributedCacheIpPolicyStore : IIpPolicyStore
     {

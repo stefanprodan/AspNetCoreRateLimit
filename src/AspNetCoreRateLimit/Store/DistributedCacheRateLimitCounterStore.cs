@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using System;
 
-namespace KestrelRateLimit
+namespace AspNetCoreRateLimit
 {
     public class DistributedCacheRateLimitCounterStore : IRateLimitCounterStore
     {

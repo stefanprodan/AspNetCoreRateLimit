@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
-namespace KestrelRateLimit.Demo.Controllers
+namespace AspNetCoreRateLimit.Demo.Controllers
 {
     [Route("api/[controller]")]
     public class IpRateLimitController : Controller

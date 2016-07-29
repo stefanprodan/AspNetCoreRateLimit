@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace KestrelRateLimit.Tests
+namespace AspNetCoreRateLimit.Tests
 {
     public class ClientRateLimitTests : IClassFixture<RateLimitFixture<Demo.Startup>>
     {

@@ -3,7 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 
-namespace KestrelRateLimit
+namespace AspNetCoreRateLimit
 {
     /// <summary>
     /// IP v4 and v6 range helper by jsakamoto
