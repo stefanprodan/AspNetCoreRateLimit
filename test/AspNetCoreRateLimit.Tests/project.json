@@ -3,11 +3,11 @@
 
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-rc2-*",
-    "KestrelRateLimit": {
+    "AspNetCoreRateLimit": {
       "version": "1.0.0-*",
       "target": "project"
     },
-    "KestrelRateLimit.Demo": {
+    "AspNetCoreRateLimit.Demo": {
       "version": "1.0.0-*",
       "target": "project"
     },

@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("KestrelRateLimit")]
+[assembly: AssemblyProduct("AspNetCoreRateLimit.Tests")]
 [assembly: AssemblyTrademark("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
@@ -16,4 +16,4 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("e9557798-3499-4726-bcb7-5eb7cb4b33e7")]
+[assembly: Guid("0a7c0247-ae46-4068-ae42-f955ae2a1d0e")]

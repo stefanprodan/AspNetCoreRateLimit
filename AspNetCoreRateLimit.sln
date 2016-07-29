@@ -10,13 +10,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "KestrelRateLimit", "src\KestrelRateLimit\KestrelRateLimit.xproj", "{E9557798-3499-4726-BCB7-5EB7CB4B33E7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "KestrelRateLimit", "src\AspNetCoreRateLimit\AspNetCoreRateLimit.xproj", "{E9557798-3499-4726-BCB7-5EB7CB4B33E7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{83B05009-1BC7-4E56-8D4B-0E107CA4D45B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "KestrelRateLimit.Demo", "test\KestrelRateLimit.Demo\KestrelRateLimit.Demo.xproj", "{14C9FF9D-E50A-4A66-AEAB-F2C113743B95}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "KestrelRateLimit.Demo", "test\AspNetCoreRateLimit.Demo\AspNetCoreRateLimit.Demo.xproj", "{14C9FF9D-E50A-4A66-AEAB-F2C113743B95}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "KestrelRateLimit.Tests", "test\KestrelRateLimit.Tests\KestrelRateLimit.Tests.xproj", "{0A7C0247-AE46-4068-AE42-F955AE2A1D0E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "KestrelRateLimit.Tests", "test\AspNetCoreRateLimit.Tests\AspNetCoreRateLimit.Tests.xproj", "{0A7C0247-AE46-4068-AE42-F955AE2A1D0E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
