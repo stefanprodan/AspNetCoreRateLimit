@@ -24,7 +24,7 @@ namespace AspNetCoreRateLimit.Tests
         [Theory]
         [InlineData("GET")]
         [InlineData("PUT")]
-        public async Task SpecificRule(string verb)
+        public async Task SpecificClientRule(string verb)
         {
             // Arrange
             var clientId = "cl-key-1";
@@ -44,6 +44,32 @@ namespace AspNetCoreRateLimit.Tests
 
             // Assert
             Assert.Equal(429, responseStatusCode);
+        }
+
+        [Fact]
+        public async Task SpecificPathRule()
+        {
+            // Arrange
+            var clientId = "cl-key-3";
+            int responseStatusCode = 0;
+            var content = string.Empty;
+            var keyword = "1s";
+
+            // Act    
+            for (int i = 0; i < 4; i++)
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, apiPath);
+                request.Headers.Add("X-ClientId", clientId);
+                request.Headers.Add("X-Real-IP", ip);
+
+                var response = await Client.SendAsync(request);
+                responseStatusCode = (int)response.StatusCode;
+                content = await response.Content.ReadAsStringAsync();
+            }
+
+            // Assert
+            Assert.Equal(429, responseStatusCode);
+            Assert.Contains(keyword, content);
         }
 
         [Fact]
