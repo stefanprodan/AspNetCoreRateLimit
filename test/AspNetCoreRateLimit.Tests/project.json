@@ -4,7 +4,7 @@
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-rc2-*",
     "AspNetCoreRateLimit": {
-      "version": "1.0.0-*",
+      "version": "1.0.1-*",
       "target": "project"
     },
     "AspNetCoreRateLimit.Demo": {
