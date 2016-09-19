@@ -1,6 +1,6 @@
-﻿{
-  "version": "1.0.0",
-  "description": "ASP.NET Core rate limiting middle-ware",
+{
+  "version": "1.0.1",
+  "description": "ASP.NET Core rate limiting middleware",
   "authors": [ "Stefan Prodan" ],
   "packOptions": {
     "tags": [ "aspnetcore", "rate-limit", "throttle" ],
@@ -14,7 +14,7 @@
     }
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc": "1.0.0",
+    "Microsoft.AspNetCore.Mvc": "1.0.1",
     "NETStandard.Library": "1.6.0"
   },
 
