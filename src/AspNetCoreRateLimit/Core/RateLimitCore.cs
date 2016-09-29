@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace AspNetCoreRateLimit
 {
@@ -90,13 +91,13 @@ namespace AspNetCoreRateLimit
             var entry = _counterStore.Get(counterId);
             if (entry.HasValue)
             {
-                headers.Reset = (entry.Value.Timestamp + ConvertToTimeSpan(rule.Period)).ToString();
+                headers.Reset = (entry.Value.Timestamp + ConvertToTimeSpan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo);
                 headers.Limit = rule.Period;
                 headers.Remaining = (rule.Limit - entry.Value.TotalRequests).ToString();
             }
             else
             {
-                headers.Reset = (DateTime.UtcNow + ConvertToTimeSpan(rule.Period)).ToString();
+                headers.Reset = (DateTime.UtcNow + ConvertToTimeSpan(rule.Period)).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo);
                 headers.Limit = rule.Period;
                 headers.Remaining = rule.Limit .ToString();
             }
