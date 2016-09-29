@@ -10,7 +10,7 @@ namespace AspNetCoreRateLimit.Tests
 {
     public class ClientRateLimitTests : IClassFixture<RateLimitFixture<Demo.Startup>>
     {
-        private const string apiPath = "/api/clients";
+        private const string apiPath = "/aPi/ClienTs";
         private const string apiRateLimitPath = "/api/ClientRateLimit";
         private const string ip = "::1";
 
