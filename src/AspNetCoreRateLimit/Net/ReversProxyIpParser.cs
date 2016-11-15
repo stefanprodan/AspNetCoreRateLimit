@@ -18,7 +18,7 @@ namespace AspNetCoreRateLimit
         {
             if (context.Request.Headers.Keys.Contains(_realIpHeader, StringComparer.CurrentCultureIgnoreCase))
             {
-                return ParseIp(context.Request.Headers[_realIpHeader].First());
+                return ParseIp(context.Request.Headers[_realIpHeader].Last());
             }
 
             return base.GetClientIp(context);
