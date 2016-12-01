@@ -1,5 +1,5 @@
 {
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "ASP.NET Core rate limiting middleware",
   "authors": [ "Stefan Prodan" ],
   "packOptions": {
