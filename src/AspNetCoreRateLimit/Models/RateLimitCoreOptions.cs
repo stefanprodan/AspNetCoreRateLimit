@@ -36,5 +36,10 @@ namespace AspNetCoreRateLimit
         /// Enables endpoint rate limiting based URL path and HTTP verb
         /// </summary>
         public bool EnableEndpointRateLimiting { get; set; }
+
+        /// <summary>
+        /// Disables X-Rate-Limit and Rety-After headers
+        /// </summary>
+        public bool DisableRateLimitHeaders { get; set; }
     }
 }

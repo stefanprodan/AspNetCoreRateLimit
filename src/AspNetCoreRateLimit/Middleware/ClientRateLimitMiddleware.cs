@@ -79,7 +79,7 @@ namespace AspNetCoreRateLimit
             }
 
             //set X-Rate-Limit headers for the longest period
-            if(rules.Any())
+            if(rules.Any() && !_options.DisableRateLimitHeaders)
             {
                 var rule = rules.OrderByDescending(x => x.PeriodTimespan.Value).First();
                 var headers = _processor.GetRateLimitHeaders(identity, rule);
@@ -111,7 +111,11 @@ namespace AspNetCoreRateLimit
         {
             var message = string.IsNullOrEmpty(_options.QuotaExceededMessage) ? $"API calls quota exceeded! maximum admitted {rule.Limit} per {rule.Period}." : _options.QuotaExceededMessage;
 
-            httpContext.Response.Headers["Retry-After"] = retryAfter;
+            if (!_options.DisableRateLimitHeaders)
+            {
+                httpContext.Response.Headers["Retry-After"] = retryAfter;
+            }
+
             httpContext.Response.StatusCode = _options.HttpStatusCode;
             return httpContext.Response.WriteAsync(message);
         }
