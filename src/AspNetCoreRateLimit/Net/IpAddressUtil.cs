@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
@@ -59,6 +60,18 @@ namespace AspNetCoreRateLimit
 
         public static IPAddress ParseIp(string ipAddress)
         {
+            //remove port number from ip address if any
+            ipAddress = ipAddress.Trim();
+            int portDelimiterPos = ipAddress.LastIndexOf(":", StringComparison.CurrentCultureIgnoreCase);
+            bool ipv6WithPortStart = ipAddress.StartsWith("[");
+            int ipv6End = ipAddress.IndexOf("]");
+            if (portDelimiterPos != -1
+                && portDelimiterPos == ipAddress.IndexOf(":", StringComparison.CurrentCultureIgnoreCase)
+                || ipv6WithPortStart && ipv6End != -1 && ipv6End < portDelimiterPos)
+            {
+                ipAddress = ipAddress.Substring(0, portDelimiterPos);
+            }
+
             return IPAddress.Parse(ipAddress);
         }
     }
