@@ -1,19 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26430.12
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{909648ED-E1F4-4DAE-A274-AEC47BE826F3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C3997747-D4C9-4E9F-866D-F5B6D10CD40F}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "KestrelRateLimit", "src\AspNetCoreRateLimit\AspNetCoreRateLimit.xproj", "{E9557798-3499-4726-BCB7-5EB7CB4B33E7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{83B05009-1BC7-4E56-8D4B-0E107CA4D45B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCoreRateLimit", "src\AspNetCoreRateLimit\AspNetCoreRateLimit.csproj", "{E9557798-3499-4726-BCB7-5EB7CB4B33E7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "KestrelRateLimit.Demo", "test\AspNetCoreRateLimit.Demo\AspNetCoreRateLimit.Demo.xproj", "{14C9FF9D-E50A-4A66-AEAB-F2C113743B95}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCoreRateLimit.Demo", "test\AspNetCoreRateLimit.Demo\AspNetCoreRateLimit.Demo.csproj", "{14C9FF9D-E50A-4A66-AEAB-F2C113743B95}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCoreRateLimit.Tests", "test\AspNetCoreRateLimit.Tests\AspNetCoreRateLimit.Tests.csproj", "{0A7C0247-AE46-4068-AE42-F955AE2A1D0E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "KestrelRateLimit.Tests", "test\AspNetCoreRateLimit.Tests\AspNetCoreRateLimit.Tests.xproj", "{0A7C0247-AE46-4068-AE42-F955AE2A1D0E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
