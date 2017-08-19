@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core rate limiting middleware</Description>
-    <VersionPrefix>1.0.5</VersionPrefix>
+    <VersionPrefix>1.0.6</VersionPrefix>
     <Authors>Stefan Prodan</Authors>
     <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
     <AssemblyName>AspNetCoreRateLimit</AssemblyName>
