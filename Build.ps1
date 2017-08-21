@@ -63,6 +63,6 @@ $revision = "{0:D4}" -f [convert]::ToInt32($revision, 10)
 
 exec { & dotnet test .\test\AspNetCoreRateLimit.Tests -c Release }
 
-exec { & dotnet pack .\src\AspNetCoreRateLimit -c Release -o ..\..\artifacts --version-suffix="preview-"$revision }
+exec { & dotnet pack .\src\AspNetCoreRateLimit -c Release -o ..\..\artifacts /property:PackageVersion=2.0.0 }
 
 
