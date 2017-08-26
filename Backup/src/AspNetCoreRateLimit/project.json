@@ -1,0 +1,28 @@
+{
+  "version": "1.0.5",
+  "description": "ASP.NET Core rate limiting middleware",
+  "authors": [ "Stefan Prodan" ],
+  "packOptions": {
+    "tags": [ "aspnetcore", "rate-limit", "throttle" ],
+    "projectUrl": "https://github.com/stefanprodan/AspNetCoreRateLimit",
+    "licenseUrl": "http://opensource.org/licenses/MIT",
+    "summary": "AspNetCoreRateLimit is an ASP.NET Core rate limiting solution designed to control the rate of requests that clients can make to a Web API or MVC app based on IP address or client ID.",
+    "copyright": "Copyright © Stefan Prodan 2016",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/stefanprodan/AspNetCoreRateLimit"
+    }
+  },
+  "dependencies": {
+    "Microsoft.AspNetCore.Mvc": "1.0.1",
+    "NETStandard.Library": "1.6.0"
+  },
+
+  "frameworks": {
+    "netstandard1.6": {
+      "imports": "dnxcore50"
+    },
+    "net46": {
+    }
+  }
+}

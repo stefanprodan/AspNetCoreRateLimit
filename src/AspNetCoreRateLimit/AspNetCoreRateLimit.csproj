@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Description>ASP.NET Core rate limiting middleware</Description>
     <VersionPrefix>1.0.6</VersionPrefix>
