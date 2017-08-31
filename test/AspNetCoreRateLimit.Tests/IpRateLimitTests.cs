@@ -24,6 +24,7 @@ namespace AspNetCoreRateLimit.Tests
         [InlineData("84.247.85.224")]
         [InlineData("84.247.85.225")]
         [InlineData("84.247.85.226:6555")]
+        [InlineData("205.156.136.211, 192.168.29.47:54610")]
         public async Task SpecificIpRule(string ip)
         {
             // Arrange
