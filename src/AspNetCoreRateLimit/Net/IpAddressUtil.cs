@@ -61,7 +61,7 @@ namespace AspNetCoreRateLimit
         public static IPAddress ParseIp(string ipAddress)
         {
             //remove port number from ip address if any
-            ipAddress = ipAddress.Trim();
+            ipAddress = ipAddress.Split(',').First().Trim();
             int portDelimiterPos = ipAddress.LastIndexOf(":", StringComparison.CurrentCultureIgnoreCase);
             bool ipv6WithPortStart = ipAddress.StartsWith("[");
             int ipv6End = ipAddress.IndexOf("]");
