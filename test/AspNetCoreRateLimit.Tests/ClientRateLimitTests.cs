@@ -123,6 +123,31 @@ namespace AspNetCoreRateLimit.Tests
         }
 
         [Fact]
+        public async Task OverrideGeneralRuleAsLimitZero()
+        {
+            // Arrange
+            var clientId = "cl-key-2";
+            int responseStatusCode = 0;
+
+
+            // Act    
+            for (int i = 0; i < 4; i++)
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, apiPath);
+                request.Headers.Add("X-ClientId", clientId);
+                request.Headers.Add("X-Real-IP", ip);
+
+                var response = await Client.SendAsync(request);
+                responseStatusCode = (int)response.StatusCode;
+            }
+
+            // Assert
+            Assert.Equal(429, responseStatusCode);
+
+        }
+
+
+        [Fact]
         public async Task WhitelistPath()
         {
             // Arrange

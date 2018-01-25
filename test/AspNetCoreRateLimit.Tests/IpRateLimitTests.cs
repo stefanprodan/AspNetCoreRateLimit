@@ -67,6 +67,28 @@ namespace AspNetCoreRateLimit.Tests
         }
 
         [Fact]
+        public async Task GlobalIpLimitZeroRule()
+        {
+            // Arrange
+            var ip = "84.247.85.231";
+
+            int responseStatusCode = 0;
+
+            // Act    
+            for (int i = 0; i < 4; i++)
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, apiValuesPath);
+                request.Headers.Add("X-Real-IP", ip);
+
+                var response = await Client.SendAsync(request);
+                responseStatusCode = (int)response.StatusCode;
+            }
+
+            // Assert
+            Assert.Equal(429, responseStatusCode);
+        }
+
+        [Fact]
         public async Task WhitelistIp()
         {
             // Arrange
