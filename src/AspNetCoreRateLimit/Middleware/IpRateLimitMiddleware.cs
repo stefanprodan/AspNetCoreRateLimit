@@ -80,6 +80,19 @@ namespace AspNetCoreRateLimit
                         return;
                     }
                 }
+                // if limit is zero or less, block the request.
+                else
+                {
+                    // process request count
+                    var counter = _processor.ProcessRequest(identity, rule);
+
+                    // log blocked request
+                    LogBlockedRequest(httpContext, identity, counter, rule);
+
+                    // break execution (Int32 max used to represent infinity)
+                    await ReturnQuotaExceededResponse(httpContext, rule, Int32.MaxValue.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    return;
+                }
             }
 
             //set X-Rate-Limit headers for the longest period
