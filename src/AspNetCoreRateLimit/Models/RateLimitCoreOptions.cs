@@ -26,6 +26,11 @@ namespace AspNetCoreRateLimit
         /// Gets or sets the counter prefix, used to compose the rate limit counter cache key
         /// </summary>
         public string RateLimitCounterPrefix { get; set; } = "crlc";
+        
+        /// <summary>
+        /// Gets or sets the counter key builder strategy, by default value is set to RequestIdentity 
+        /// </summary>
+        public string CounterKeyBuilder { get; set; } = "RequestIdentity";
 
         /// <summary>
         /// Gets or sets a value indicating whether all requests, including the rejected ones, should be stacked in this order: day, hour, min, sec

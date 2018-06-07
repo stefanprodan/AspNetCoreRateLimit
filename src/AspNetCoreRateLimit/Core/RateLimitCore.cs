@@ -5,34 +5,22 @@ namespace AspNetCoreRateLimit
 {
     public class RateLimitCore
     {
-        private readonly RateLimitCoreOptions _options;
         private readonly IRateLimitCounterStore _counterStore;
-        private readonly bool _ipRateLimiting;
-
+        private readonly IBuildCounterKey _counterKeyBuilder;
+        
         private static readonly object _processLocker = new object();
 
         public RateLimitCore(bool ipRateLimiting,
             RateLimitCoreOptions options,
            IRateLimitCounterStore counterStore)
         {
-            _ipRateLimiting = ipRateLimiting;
-            _options = options;
             _counterStore = counterStore;
+            _counterKeyBuilder = new CounterKeyBuilderFactory().Create(ipRateLimiting, options);
         }
 
         public string ComputeCounterKey(ClientRequestIdentity requestIdentity, RateLimitRule rule)
         {
-            var key = _ipRateLimiting ? 
-                $"{_options.RateLimitCounterPrefix}_{requestIdentity.ClientIp}_{rule.Period}" :
-                $"{_options.RateLimitCounterPrefix}_{requestIdentity.ClientId}_{rule.Period}";
-
-            if(_options.EnableEndpointRateLimiting)
-            {
-                key += $"_{requestIdentity.HttpVerb}_{requestIdentity.Path}";
-
-                // TODO: consider using the rule endpoint as key, this will allow to rate limit /api/values/1 and api/values/2 under same counter
-                //key += $"_{rule.Endpoint}";
-            }
+            string key = _counterKeyBuilder.BuildCounterKey(requestIdentity, rule);
 
             var idBytes = System.Text.Encoding.UTF8.GetBytes(key);
 
