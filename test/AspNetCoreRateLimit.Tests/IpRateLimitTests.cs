@@ -5,16 +5,19 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace AspNetCoreRateLimit.Tests
 {
     public class IpRateLimitTests: IClassFixture<RateLimitFixture<Demo.Startup>>
     {
+        private readonly ITestOutputHelper _output;
         private const string apiValuesPath = "/api/values";
         private const string apiRateLimitPath = "/api/ipratelimit";
 
-        public IpRateLimitTests(RateLimitFixture<Demo.Startup> fixture)
+        public IpRateLimitTests(RateLimitFixture<Demo.Startup> fixture, ITestOutputHelper output)
         {
+            _output = output;
             Client = fixture.Client;
         }
 
@@ -129,6 +132,7 @@ namespace AspNetCoreRateLimit.Tests
 
                 var response = await Client.SendAsync(request);
                 responseStatusCode = (int)response.StatusCode;
+                _output.WriteLine($"{verb}{apiValuesPath} attempt {i} results with {(int)response.StatusCode}");
             }
 
             // Assert
