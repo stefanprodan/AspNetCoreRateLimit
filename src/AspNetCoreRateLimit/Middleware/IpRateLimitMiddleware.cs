@@ -143,7 +143,7 @@ namespace AspNetCoreRateLimit
 
         public virtual Task ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitRule rule, string retryAfter)
         {
-            var message = string.IsNullOrEmpty(_options.QuotaExceededMessage) ? $"API calls quota exceeded! maximum admitted {rule.Limit} per {rule.Period}." : _options.QuotaExceededMessage;
+            var message = string.Format(_options.QuotaExceededMessage ?? "API calls quota exceeded! maximum admitted {0} per {1}.", rule.Limit, rule.Period);
 
             if (!_options.DisableRateLimitHeaders)
             {
