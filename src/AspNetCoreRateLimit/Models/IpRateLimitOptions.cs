@@ -18,6 +18,9 @@ namespace AspNetCoreRateLimit
         /// Gets or sets the policy prefix, used to compose the client policy cache key
         /// </summary>
         public string IpPolicyPrefix { get; set; } = "ippp";
+        public string IpTempBanPeriod { get; set; } = "1h";
+        public int IpFloodWarningFactor { get; set; } = 2;
+        public int IpFloodBanFactor { get; set; } = 3;
 
         public List<string> IpWhitelist { get; set; }
     }
