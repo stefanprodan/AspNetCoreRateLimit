@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using AspNetCoreRateLimit.Services;
 
 namespace AspNetCoreRateLimit
 {
@@ -13,16 +14,19 @@ namespace AspNetCoreRateLimit
         private readonly ILogger<ClientRateLimitMiddleware> _logger;
         private readonly ClientRateLimitProcessor _processor;
         private readonly ClientRateLimitOptions _options;
+        private IClientRequestStore _clientRequestStore;
 
         public ClientRateLimitMiddleware(RequestDelegate next,
             IOptions<ClientRateLimitOptions> options,
             IRateLimitCounterStore counterStore,
             IClientPolicyStore policyStore,
+            IClientRequestStore clientRequestStore,
             ILogger<ClientRateLimitMiddleware> logger
             )
         {
             _next = next;
             _options = options.Value;
+            _clientRequestStore = clientRequestStore;
             _logger = logger;
 
             _processor = new ClientRateLimitProcessor(_options, counterStore, policyStore);
@@ -38,7 +42,7 @@ namespace AspNetCoreRateLimit
             }
 
             // compute identity from request
-            var identity = SetIdentity(httpContext);
+            var identity = await _clientRequestStore.GetClientRequestIdentityAsync(httpContext);
 
             // check white list
             if (_processor.IsWhitelisted(identity))
@@ -102,22 +106,6 @@ namespace AspNetCoreRateLimit
             }
 
             await _next.Invoke(httpContext);
-        }
-
-        public virtual ClientRequestIdentity SetIdentity(HttpContext httpContext)
-        {
-            var clientId = "anon";
-            if (httpContext.Request.Headers.Keys.Contains(_options.ClientIdHeader,StringComparer.CurrentCultureIgnoreCase))
-            {
-                clientId = httpContext.Request.Headers[_options.ClientIdHeader].First();
-            }
-
-            return new ClientRequestIdentity
-            {
-                Path = httpContext.Request.Path.ToString().ToLowerInvariant(),
-                HttpVerb = httpContext.Request.Method.ToLowerInvariant(),
-                ClientId = clientId
-            };
         }
 
         public virtual Task ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitRule rule, string retryAfter)

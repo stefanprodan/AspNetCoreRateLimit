@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using AspNetCoreRateLimit.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace AspNetCoreRateLimit
 {
@@ -14,6 +17,9 @@ namespace AspNetCoreRateLimit
             return builder.UseMiddleware<ClientRateLimitMiddleware>();
         }
 
-       
+        public static void AddHeaderClientRequestStore(this IServiceCollection services)
+        {
+            services.TryAddSingleton<IClientRequestStore, HeaderClientRequestStore>();
+        }
     }
 }
