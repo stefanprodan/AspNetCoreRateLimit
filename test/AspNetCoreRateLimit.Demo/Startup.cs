@@ -51,7 +51,11 @@ namespace AspNetCoreRateLimit.Demo
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            app.UseIpRateLimiting();
+            /* app.UseIpRateLimiting();
+             * CustomMiddleware now calls 'IpRateLimitMiddleware' if EndpointWhiteList not match in the URL Request
+             * And if it matches, follow the next middleware
+             */
+            app.UseCustomIpRateLimiting();
             app.UseClientRateLimiting();
 
             app.UseMvc();
