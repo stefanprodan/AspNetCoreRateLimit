@@ -1,24 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace AspNetCoreRateLimit.Tests
 {
-    public class IpRateLimitTests: IClassFixture<RateLimitFixture<Demo.Startup>>
+    public class IpRateLimitTests: IClassFixture<WebApplicationFactory<Demo.Startup>>
     {
         private const string apiValuesPath = "/api/values";
         private const string apiRateLimitPath = "/api/ipratelimit";
 
-        public IpRateLimitTests(RateLimitFixture<Demo.Startup> fixture)
-        {
-            Client = fixture.Client;
-        }
+        private readonly HttpClient _client;
 
-        public HttpClient Client { get; }
+        public IpRateLimitTests(WebApplicationFactory<Demo.Startup> factory)
+        {
+            _client = factory.CreateClient(options: new WebApplicationFactoryClientOptions
+            {
+                BaseAddress = new System.Uri("https://localhost:44304")
+            });
+        }
 
         [Theory]
         [InlineData("84.247.85.224")]
@@ -36,7 +36,7 @@ namespace AspNetCoreRateLimit.Tests
                 var request = new HttpRequestMessage(HttpMethod.Get, apiValuesPath);
                 request.Headers.Add("X-Real-IP", ip);
 
-                var response = await Client.SendAsync(request);
+                var response = await _client.SendAsync(request);
                 responseStatusCode = (int)response.StatusCode;
             }
 
@@ -58,7 +58,7 @@ namespace AspNetCoreRateLimit.Tests
                 var request = new HttpRequestMessage(HttpMethod.Get, apiValuesPath);
                 request.Headers.Add("X-Real-IP", ip);
 
-                var response = await Client.SendAsync(request);
+                var response = await _client.SendAsync(request);
                 responseStatusCode = (int)response.StatusCode;
             }
 
@@ -80,7 +80,7 @@ namespace AspNetCoreRateLimit.Tests
                 var request = new HttpRequestMessage(HttpMethod.Get, apiValuesPath);
                 request.Headers.Add("X-Real-IP", ip);
 
-                var response = await Client.SendAsync(request);
+                var response = await _client.SendAsync(request);
                 responseStatusCode = (int)response.StatusCode;
             }
 
@@ -102,7 +102,7 @@ namespace AspNetCoreRateLimit.Tests
                 var request = new HttpRequestMessage(HttpMethod.Get, apiValuesPath);
                 request.Headers.Add("X-Real-IP", ip);
 
-                var response = await Client.SendAsync(request);
+                var response = await _client.SendAsync(request);
                 responseStatusCode = (int)response.StatusCode;
             }
 
@@ -127,7 +127,7 @@ namespace AspNetCoreRateLimit.Tests
                 var request = new HttpRequestMessage(new HttpMethod(verb), apiValuesPath);
                 request.Headers.Add("X-Real-IP", ip);
 
-                var response = await Client.SendAsync(request);
+                var response = await _client.SendAsync(request);
                 responseStatusCode = (int)response.StatusCode;
             }
 
@@ -148,7 +148,7 @@ namespace AspNetCoreRateLimit.Tests
                 var request = new HttpRequestMessage(HttpMethod.Delete, apiValuesPath);
                 request.Headers.Add("X-Real-IP", ip);
 
-                var response = await Client.SendAsync(request);
+                var response = await _client.SendAsync(request);
                 responseStatusCode = (int)response.StatusCode;
             }
 
@@ -171,7 +171,7 @@ namespace AspNetCoreRateLimit.Tests
                 request.Headers.Add("X-Real-IP", ip);
                 request.Headers.Add("X-ClientId", clientId);
 
-                var response = await Client.SendAsync(request);
+                var response = await _client.SendAsync(request);
                 responseStatusCode = (int)response.StatusCode;
             }
 
@@ -190,13 +190,13 @@ namespace AspNetCoreRateLimit.Tests
             var updateRequest = new HttpRequestMessage(HttpMethod.Post, apiRateLimitPath);
             updateRequest.Headers.Add("X-Real-IP", ip);
 
-            var updateResponse = await Client.SendAsync(updateRequest);
+            var updateResponse = await _client.SendAsync(updateRequest);
             Assert.True(updateResponse.IsSuccessStatusCode);
 
             var request = new HttpRequestMessage(HttpMethod.Get, apiRateLimitPath);
             request.Headers.Add("X-Real-IP", ip);
 
-            var response = await Client.SendAsync(request);
+            var response = await _client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
             // Assert

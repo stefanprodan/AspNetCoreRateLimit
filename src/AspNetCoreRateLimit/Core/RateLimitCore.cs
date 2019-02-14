@@ -110,7 +110,7 @@ namespace AspNetCoreRateLimit
             var secondsPast = Convert.ToInt32((DateTime.UtcNow - timestamp).TotalSeconds);
             var retryAfter = Convert.ToInt32(rule.PeriodTimespan.Value.TotalSeconds);
             retryAfter = retryAfter > 1 ? retryAfter - secondsPast : 1;
-            return retryAfter.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return retryAfter.ToString(CultureInfo.InvariantCulture);
         }
 
         public TimeSpan ConvertToTimeSpan(string timeSpan)

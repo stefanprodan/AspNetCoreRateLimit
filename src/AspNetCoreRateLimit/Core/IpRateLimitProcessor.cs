@@ -1,7 +1,7 @@
-﻿using System;
+﻿using AspNetCoreRateLimit.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using AspNetCoreRateLimit.Core;
 
 namespace AspNetCoreRateLimit
 {
@@ -12,8 +12,6 @@ namespace AspNetCoreRateLimit
         private readonly IIpPolicyStore _policyStore;
         private readonly IIpAddressParser _ipParser;
         private readonly RateLimitCore _core;
-
-        private static readonly object _processLocker = new object();
 
         public IpRateLimitProcessor(IpRateLimitOptions options,
            IRateLimitCounterStore counterStore,

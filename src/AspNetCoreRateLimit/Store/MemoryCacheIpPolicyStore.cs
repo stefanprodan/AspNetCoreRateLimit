@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
 
 namespace AspNetCoreRateLimit
 {
@@ -30,14 +28,12 @@ namespace AspNetCoreRateLimit
 
         public bool Exists(string id)
         {
-            IpRateLimitPolicies stored;
-            return _memoryCache.TryGetValue(id, out stored);
+            return _memoryCache.TryGetValue(id, out _);
         }
 
         public IpRateLimitPolicies Get(string id)
         {
-            IpRateLimitPolicies stored;
-            if (_memoryCache.TryGetValue(id, out stored))
+            if (_memoryCache.TryGetValue(id, out IpRateLimitPolicies stored))
             {
                 return stored;
             }
