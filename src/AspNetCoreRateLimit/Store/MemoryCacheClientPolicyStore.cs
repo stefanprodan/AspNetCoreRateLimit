@@ -3,22 +3,26 @@ using Microsoft.Extensions.Options;
 
 namespace AspNetCoreRateLimit
 {
-    public class MemoryCacheClientPolicyStore: IClientPolicyStore
+    public class MemoryCacheClientPolicyStore : IClientPolicyStore
     {
         private readonly IMemoryCache _memoryCache;
 
-        public MemoryCacheClientPolicyStore(IMemoryCache memoryCache, 
+        public MemoryCacheClientPolicyStore(
+            IMemoryCache memoryCache, 
             IOptions<ClientRateLimitOptions> options = null, 
             IOptions<ClientRateLimitPolicies> policies = null)
         {
             _memoryCache = memoryCache;
 
+            var clientOptions = options?.Value;
+            var clientPolicyRules = policies?.Value?.ClientRules;
+
             //save client rules defined in appsettings in cache on startup
-            if(options != null && options.Value != null && policies != null && policies.Value != null && policies.Value.ClientRules != null)
+            if (clientOptions != null && clientPolicyRules != null)
             {
-                foreach (var rule in policies.Value.ClientRules)
+                foreach (var rule in clientPolicyRules)
                 {
-                    Set($"{options.Value.ClientPolicyPrefix}_{rule.ClientId}", new ClientRateLimitPolicy { ClientId = rule.ClientId, Rules = rule.Rules });
+                    Set($"{clientOptions.ClientPolicyPrefix}_{rule.ClientId}", new ClientRateLimitPolicy { ClientId = rule.ClientId, Rules = rule.Rules });
                 }
             }
         }

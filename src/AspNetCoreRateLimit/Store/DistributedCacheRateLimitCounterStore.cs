@@ -21,16 +21,19 @@ namespace AspNetCoreRateLimit
         public bool Exists(string id)
         {
             var stored = _memoryCache.GetString(id);
+
             return !string.IsNullOrEmpty(stored);
         }
 
         public RateLimitCounter? Get(string id)
         {
             var stored = _memoryCache.GetString(id);
+
             if(!string.IsNullOrEmpty(stored))
             {
                 return JsonConvert.DeserializeObject<RateLimitCounter>(stored);
             }
+
             return null;
         }
 

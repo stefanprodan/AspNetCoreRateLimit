@@ -7,16 +7,20 @@ namespace AspNetCoreRateLimit
     {
         private readonly IMemoryCache _memoryCache;
 
-        public MemoryCacheIpPolicyStore(IMemoryCache memoryCache, 
+        public MemoryCacheIpPolicyStore(
+            IMemoryCache memoryCache, 
             IOptions<IpRateLimitOptions> options = null, 
             IOptions<IpRateLimitPolicies> policies = null)
         {
             _memoryCache = memoryCache;
 
-            //save ip rules defined in appsettings in cache on startup
-            if (options != null && options.Value != null && policies != null && policies.Value != null && policies.Value.IpRules != null)
+            var ipOptions = options?.Value;
+            var ipPolicyRules = policies?.Value;
+
+            //save IP rules defined in appsettings in cache on startup
+            if (ipOptions != null && ipPolicyRules != null)
             {
-                Set($"{options.Value.IpPolicyPrefix}", policies.Value);
+                Set($"{ipOptions.IpPolicyPrefix}", ipPolicyRules);
 
             }
         }
