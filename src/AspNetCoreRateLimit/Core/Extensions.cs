@@ -5,16 +5,18 @@ namespace AspNetCoreRateLimit
 {
     public static class Extensions
     {
-        public static bool ContainsIgnoreCase(this string source, string value, StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase)
+        public static bool IsWildcardMatch(this string source, string value)
         {
-            return source != null && value != null && source.IndexOf(value, stringComparison) >= 0;
+            return source != null && value != null && source.ToLowerInvariant().IsMatch(value.ToLowerInvariant());
         }
 
         public static string RetryAfterFrom(this DateTime timestamp, RateLimitRule rule)
         {
             var secondsPast = Convert.ToInt32((DateTime.UtcNow - timestamp).TotalSeconds);
             var retryAfter = Convert.ToInt32(rule.PeriodTimespan.Value.TotalSeconds);
+
             retryAfter = retryAfter > 1 ? retryAfter - secondsPast : 1;
+
             return retryAfter.ToString(CultureInfo.InvariantCulture);
         }
 
