@@ -1,12 +1,6 @@
-﻿using System;
-
-namespace AspNetCoreRateLimit
+﻿namespace AspNetCoreRateLimit
 {
-    public interface IRateLimitCounterStore
+    public interface IRateLimitCounterStore : IRateLimitStore<RateLimitCounter?>
     {
-        bool Exists(string id);
-        RateLimitCounter? Get(string id);
-        void Remove(string id);
-        void Set(string id, RateLimitCounter counter, TimeSpan expirationTime);
     }
 }

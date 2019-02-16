@@ -22,33 +22,33 @@ namespace AspNetCoreRateLimit
             _processor = processor;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext context)
         {
             // check if rate limiting is enabled
             if (_options == null)
             {
-                await _next.Invoke(httpContext);
+                await _next.Invoke(context);
                 return;
             }
 
             // compute identity from request
-            var identity = SetIdentity(httpContext);
+            var identity = SetIdentity(context);
 
             // check white list
             if (_processor.IsWhitelisted(identity))
             {
-                await _next.Invoke(httpContext);
+                await _next.Invoke(context);
                 return;
             }
 
-            var rules = _processor.GetMatchingRules(identity);
+            var rules = await _processor.GetMatchingRulesAsync(identity, context.RequestAborted);
 
             foreach (var rule in rules)
             {
                 if (rule.Limit > 0)
                 {
                     // increment counter
-                    var counter = _processor.ProcessRequest(identity, rule);
+                    var counter = await _processor.ProcessRequestAsync(identity, rule, context.RequestAborted);
 
                     // check if key expired
                     if (counter.Timestamp + rule.PeriodTimespan.Value < DateTime.UtcNow)
@@ -63,10 +63,11 @@ namespace AspNetCoreRateLimit
                         var retryAfter = counter.Timestamp.RetryAfterFrom(rule);
 
                         // log blocked request
-                        LogBlockedRequest(httpContext, identity, counter, rule);
+                        LogBlockedRequest(context, identity, counter, rule);
 
                         // break execution
-                        await ReturnQuotaExceededResponse(httpContext, rule, retryAfter);
+                        await ReturnQuotaExceededResponse(context, rule, retryAfter);
+
                         return;
                     }
                 }
@@ -74,28 +75,30 @@ namespace AspNetCoreRateLimit
                 else
                 {
                     // process request count
-                    var counter = _processor.ProcessRequest(identity, rule);
+                    var counter = await _processor.ProcessRequestAsync(identity, rule, context.RequestAborted);
 
                     // log blocked request
-                    LogBlockedRequest(httpContext, identity, counter, rule);
+                    LogBlockedRequest(context, identity, counter, rule);
 
                     // break execution (Int32 max used to represent infinity)
-                    await ReturnQuotaExceededResponse(httpContext, rule, int.MaxValue.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    await ReturnQuotaExceededResponse(context, rule, int.MaxValue.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
                     return;
                 }
             }
 
-            //set X-Rate-Limit headers for the longest period
+            // set X-Rate-Limit headers for the longest period
             if (rules.Any() && !_options.DisableRateLimitHeaders)
             {
                 var rule = rules.OrderByDescending(x => x.PeriodTimespan.Value).First();
-                var headers = _processor.GetRateLimitHeaders(identity, rule);
-                headers.Context = httpContext;
+                var headers = await _processor.GetRateLimitHeadersAsync(identity, rule, context.RequestAborted);
 
-                httpContext.Response.OnStarting(SetRateLimitHeaders, state: headers);
+                headers.Context = context;
+
+                context.Response.OnStarting(SetRateLimitHeaders, state: headers);
             }
 
-            await _next.Invoke(httpContext);
+            await _next.Invoke(context);
         }
 
         public virtual ClientRequestIdentity SetIdentity(HttpContext httpContext)

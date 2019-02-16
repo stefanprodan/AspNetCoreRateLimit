@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AspNetCoreRateLimit
 {
     public class IpRateLimitProcessor : RateLimitProcessor, IRateLimitProcessor
     {
         private readonly IpRateLimitOptions _options;
-        private readonly IPolicyStore<IpRateLimitPolicies> _policyStore;
+        private readonly IRateLimitStore<IpRateLimitPolicies> _policyStore;
 
         public IpRateLimitProcessor(IpRateLimitOptions options,
            IRateLimitCounterStore counterStore,
@@ -17,10 +19,10 @@ namespace AspNetCoreRateLimit
             _policyStore = policyStore;
         }
 
-        public IEnumerable<RateLimitRule> GetMatchingRules(ClientRequestIdentity identity)
+        public async Task<IEnumerable<RateLimitRule>> GetMatchingRulesAsync(ClientRequestIdentity identity, CancellationToken cancellationToken = default)
         {
             var limits = new List<RateLimitRule>();
-            var policies = _policyStore.Get($"{_options.IpPolicyPrefix}");
+            var policies = await _policyStore.GetAsync($"{_options.IpPolicyPrefix}", cancellationToken);
 
             if (policies != null && policies.IpRules != null && policies.IpRules.Any())
             {

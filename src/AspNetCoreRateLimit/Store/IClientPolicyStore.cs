@@ -1,6 +1,9 @@
-﻿namespace AspNetCoreRateLimit
+﻿using System.Threading.Tasks;
+
+namespace AspNetCoreRateLimit
 {
-    public interface IClientPolicyStore : IPolicyStore<ClientRateLimitPolicy>
+    public interface IClientPolicyStore : IRateLimitStore<ClientRateLimitPolicy>
     {
+        Task SeedAsync();
     }
 }

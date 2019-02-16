@@ -1,15 +1,17 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AspNetCoreRateLimit
 {
     public interface IRateLimitProcessor
     {
-        IEnumerable<RateLimitRule> GetMatchingRules(ClientRequestIdentity identity);
+        Task<IEnumerable<RateLimitRule>> GetMatchingRulesAsync(ClientRequestIdentity identity, CancellationToken cancellationToken = default);
 
-        RateLimitHeaders GetRateLimitHeaders(ClientRequestIdentity requestIdentity, RateLimitRule rule);
+        Task<RateLimitHeaders> GetRateLimitHeadersAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken = default);
+
+        Task<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken = default);
 
         bool IsWhitelisted(ClientRequestIdentity requestIdentity);
-
-        RateLimitCounter ProcessRequest(ClientRequestIdentity requestIdentity, RateLimitRule rule);
     }
 }

@@ -1,55 +1,33 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
 namespace AspNetCoreRateLimit
 {
-    public class MemoryCacheClientPolicyStore : IClientPolicyStore
+    public class MemoryCacheClientPolicyStore : MemoryCacheRateLimitStore<ClientRateLimitPolicy>, IClientPolicyStore
     {
-        private readonly IMemoryCache _memoryCache;
+        private readonly ClientRateLimitOptions _options;
+        private readonly ClientRateLimitPolicies _policies;
 
         public MemoryCacheClientPolicyStore(
-            IMemoryCache memoryCache, 
-            IOptions<ClientRateLimitOptions> options = null, 
-            IOptions<ClientRateLimitPolicies> policies = null)
+            IMemoryCache cache,
+            IOptions<ClientRateLimitOptions> options = null,
+            IOptions<ClientRateLimitPolicies> policies = null) : base(cache)
         {
-            _memoryCache = memoryCache;
+            _options = options?.Value;
+            _policies = policies?.Value;
+        }
 
-            var clientOptions = options?.Value;
-            var clientPolicyRules = policies?.Value?.ClientRules;
-
-            //save client rules defined in appsettings in cache on startup
-            if (clientOptions != null && clientPolicyRules != null)
+        public async Task SeedAsync()
+        {
+            // on startup, save the IP rules defined in appsettings
+            if (_options != null && _policies?.ClientRules != null)
             {
-                foreach (var rule in clientPolicyRules)
+                foreach (var rule in _policies.ClientRules)
                 {
-                    Set($"{clientOptions.ClientPolicyPrefix}_{rule.ClientId}", new ClientRateLimitPolicy { ClientId = rule.ClientId, Rules = rule.Rules });
+                    await SetAsync($"{_options.ClientPolicyPrefix}_{rule.ClientId}", new ClientRateLimitPolicy { ClientId = rule.ClientId, Rules = rule.Rules });
                 }
             }
-        }
-
-        public void Set(string id, ClientRateLimitPolicy policy)
-        {
-            _memoryCache.Set(id, policy);
-        }
-
-        public bool Exists(string id)
-        {
-            return _memoryCache.TryGetValue(id, out _);
-        }
-
-        public ClientRateLimitPolicy Get(string id)
-        {
-            if (_memoryCache.TryGetValue(id, out ClientRateLimitPolicy stored))
-            {
-                return stored;
-            }
-
-            return null;
-        }
-
-        public void Remove(string id)
-        {
-            _memoryCache.Remove(id);
         }
     }
 }

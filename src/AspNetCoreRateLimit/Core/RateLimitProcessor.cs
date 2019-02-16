@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AspNetCoreRateLimit
 {
@@ -18,7 +20,96 @@ namespace AspNetCoreRateLimit
             _counterStore = counterStore;
         }
 
-        private static readonly object _processLocker = new object();
+        private static readonly SemaphoreSlim Semaphore = new SemaphoreSlim(1);
+
+        public virtual bool IsWhitelisted(ClientRequestIdentity requestIdentity)
+        {
+            if (_options.ClientWhitelist != null && _options.ClientWhitelist.Contains(requestIdentity.ClientId))
+            {
+                return true;
+            }
+
+            if (_options.EndpointWhitelist != null && _options.EndpointWhitelist.Any())
+            {
+                if (_options.EndpointWhitelist.Any(x => $"{requestIdentity.HttpVerb}:{requestIdentity.Path}".ContainsIgnoreCase(x)) ||
+                    _options.EndpointWhitelist.Any(x => $"*:{requestIdentity.Path}".ContainsIgnoreCase(x)))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public async Task<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken = default)
+        {
+            var counter = new RateLimitCounter
+            {
+                Timestamp = DateTime.UtcNow,
+                TotalRequests = 1
+            };
+
+            var counterId = ComputeCounterKey(requestIdentity, rule);
+
+            // serial reads and writes
+            await Semaphore.WaitAsync(cancellationToken);
+
+            try
+            {
+                var entry = await _counterStore.GetAsync(counterId, cancellationToken);
+
+                if (entry.HasValue)
+                {
+                    // entry has not expired
+                    if (entry.Value.Timestamp + rule.PeriodTimespan.Value >= DateTime.UtcNow)
+                    {
+                        // increment request count
+                        var totalRequests = entry.Value.TotalRequests + 1;
+
+                        // deep copy
+                        counter = new RateLimitCounter
+                        {
+                            Timestamp = entry.Value.Timestamp,
+                            TotalRequests = totalRequests
+                        };
+                    }
+                }
+
+                // stores: id (string) - timestamp (datetime) - total_requests (long)
+                await _counterStore.SetAsync(counterId, counter, rule.PeriodTimespan.Value, cancellationToken);
+            }
+            finally
+            {
+                Semaphore.Release();
+            }
+
+            return counter;
+        }
+
+        public async Task<RateLimitHeaders> GetRateLimitHeadersAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken = default)
+        {
+            var headers = new RateLimitHeaders();
+            var counterId = ComputeCounterKey(requestIdentity, rule);
+            var entry = await _counterStore.GetAsync(counterId, cancellationToken);
+
+            long remaining;
+            DateTime reset;
+
+            if (entry.HasValue)
+            {
+                reset = entry.Value.Timestamp + rule.Period.ToTimeSpan();
+                remaining = rule.Limit - entry.Value.TotalRequests;
+            }
+            else
+            {
+                reset = DateTime.UtcNow + rule.Period.ToTimeSpan();
+                remaining = rule.Limit;
+            }
+
+            headers.Reset = reset.ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo);
+            headers.Limit = rule.Period;
+            headers.Remaining = remaining.ToString();
+
+            return headers;
+        }
 
         protected abstract string GetCounterKey(ClientRequestIdentity requestIdentity, RateLimitRule rule);
 
@@ -118,83 +209,6 @@ namespace AspNetCoreRateLimit
             }
 
             return limits;
-        }
-
-        public virtual bool IsWhitelisted(ClientRequestIdentity requestIdentity)
-        {
-            if (_options.ClientWhitelist != null && _options.ClientWhitelist.Contains(requestIdentity.ClientId))
-            {
-                return true;
-            }
-
-            if (_options.EndpointWhitelist != null && _options.EndpointWhitelist.Any())
-            {
-                if (_options.EndpointWhitelist.Any(x => $"{requestIdentity.HttpVerb}:{requestIdentity.Path}".ContainsIgnoreCase(x)) ||
-                    _options.EndpointWhitelist.Any(x => $"*:{requestIdentity.Path}".ContainsIgnoreCase(x)))
-                    return true;
-            }
-
-            return false;
-        }
-
-        public RateLimitCounter ProcessRequest(ClientRequestIdentity requestIdentity, RateLimitRule rule)
-        {
-            var counter = new RateLimitCounter
-            {
-                Timestamp = DateTime.UtcNow,
-                TotalRequests = 1
-            };
-
-            var counterId = ComputeCounterKey(requestIdentity, rule);
-
-            // serial reads and writes
-            lock (_processLocker)
-            {
-                var entry = _counterStore.Get(counterId);
-
-                if (entry.HasValue)
-                {
-                    // entry has not expired
-                    if (entry.Value.Timestamp + rule.PeriodTimespan.Value >= DateTime.UtcNow)
-                    {
-                        // increment request count
-                        var totalRequests = entry.Value.TotalRequests + 1;
-
-                        // deep copy
-                        counter = new RateLimitCounter
-                        {
-                            Timestamp = entry.Value.Timestamp,
-                            TotalRequests = totalRequests
-                        };
-                    }
-                }
-
-                // stores: id (string) - timestamp (datetime) - total_requests (long)
-                _counterStore.Set(counterId, counter, rule.PeriodTimespan.Value);
-            }
-
-            return counter;
-        }
-
-        public RateLimitHeaders GetRateLimitHeaders(ClientRequestIdentity requestIdentity, RateLimitRule rule)
-        {
-            var headers = new RateLimitHeaders();
-            var counterId = ComputeCounterKey(requestIdentity, rule);
-            var entry = _counterStore.Get(counterId);
-            if (entry.HasValue)
-            {
-                headers.Reset = (entry.Value.Timestamp + rule.Period.ToTimeSpan()).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo);
-                headers.Limit = rule.Period;
-                headers.Remaining = (rule.Limit - entry.Value.TotalRequests).ToString();
-            }
-            else
-            {
-                headers.Reset = (DateTime.UtcNow + rule.Period.ToTimeSpan()).ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo);
-                headers.Limit = rule.Period;
-                headers.Remaining = rule.Limit.ToString();
-            }
-
-            return headers;
         }
     }
 }
