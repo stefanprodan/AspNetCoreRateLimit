@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 
 namespace AspNetCoreRateLimit.Demo.Controllers
 {
@@ -29,9 +25,9 @@ namespace AspNetCoreRateLimit.Demo.Controllers
         [HttpPost]
         public void Post()
         {
-            var pol = _ipPolicyStore.Get(_options.IpPolicyPrefix);
+            var policy = _ipPolicyStore.Get(_options.IpPolicyPrefix);
 
-            pol.IpRules.Add(new IpRateLimitPolicy
+            policy.IpRules.Add(new IpRateLimitPolicy
             {
                 Ip = "8.8.4.4",
                 Rules = new List<RateLimitRule>(new RateLimitRule[] {
@@ -42,7 +38,7 @@ namespace AspNetCoreRateLimit.Demo.Controllers
                 })
             });
 
-            _ipPolicyStore.Set(_options.IpPolicyPrefix, pol);
+            _ipPolicyStore.Set(_options.IpPolicyPrefix, policy);
         }
     }
 }

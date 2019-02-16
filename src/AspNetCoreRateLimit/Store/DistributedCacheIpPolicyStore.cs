@@ -18,7 +18,6 @@ namespace AspNetCoreRateLimit
             if (options != null && options.Value != null && policies != null && policies.Value != null && policies.Value.IpRules != null)
             {
                 Set($"{options.Value.IpPolicyPrefix}", policies.Value);
-
             }
         }
 

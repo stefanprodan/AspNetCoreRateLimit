@@ -19,14 +19,12 @@ namespace AspNetCoreRateLimit
 
         public bool Exists(string id)
         {
-            RateLimitCounter stored;
-            return _memoryCache.TryGetValue(id, out stored);
+            return _memoryCache.TryGetValue(id, out _);
         }
 
         public RateLimitCounter? Get(string id)
         {
-            RateLimitCounter stored;
-            if (_memoryCache.TryGetValue(id, out stored))
+            if (_memoryCache.TryGetValue(id, out RateLimitCounter stored))
             {
                 return stored;
             }

@@ -86,7 +86,7 @@ namespace AspNetCoreRateLimit
                     LogBlockedRequest(httpContext, identity, counter, rule);
 
                     // break execution (Int32 max used to represent infinity)
-                    await ReturnQuotaExceededResponse(httpContext, rule, Int32.MaxValue.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    await ReturnQuotaExceededResponse(httpContext, rule, int.MaxValue.ToString(System.Globalization.CultureInfo.InvariantCulture));
                     return;
                 }
             }

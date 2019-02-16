@@ -11,8 +11,6 @@ namespace AspNetCoreRateLimit
         private readonly IClientPolicyStore _policyStore;
         private readonly RateLimitCore _core;
 
-        private static readonly object _processLocker = new object();
-
         public ClientRateLimitProcessor(ClientRateLimitOptions options,
            IRateLimitCounterStore counterStore,
            IClientPolicyStore policyStore)

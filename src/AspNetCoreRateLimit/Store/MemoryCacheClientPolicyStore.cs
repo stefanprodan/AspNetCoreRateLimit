@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
 
 namespace AspNetCoreRateLimit
 {
@@ -32,14 +30,12 @@ namespace AspNetCoreRateLimit
 
         public bool Exists(string id)
         {
-            ClientRateLimitPolicy stored;
-            return _memoryCache.TryGetValue(id, out stored);
+            return _memoryCache.TryGetValue(id, out _);
         }
 
         public ClientRateLimitPolicy Get(string id)
         {
-            ClientRateLimitPolicy stored;
-            if (_memoryCache.TryGetValue(id, out stored))
+            if (_memoryCache.TryGetValue(id, out ClientRateLimitPolicy stored))
             {
                 return stored;
             }
