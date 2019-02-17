@@ -101,12 +101,12 @@ namespace AspNetCoreRateLimit
 
             if (entry.HasValue)
             {
-                reset = entry.Value.Timestamp + rule.Period.ToTimeSpan();
+                reset = entry.Value.Timestamp + (rule.PeriodTimespan ?? rule.Period.ToTimeSpan());
                 remaining = rule.Limit - entry.Value.TotalRequests;
             }
             else
             {
-                reset = DateTime.UtcNow + rule.Period.ToTimeSpan();
+                reset = DateTime.UtcNow + (rule.PeriodTimespan ?? rule.Period.ToTimeSpan());
                 remaining = rule.Limit;
             }
 
@@ -203,7 +203,7 @@ namespace AspNetCoreRateLimit
 
             foreach (var item in limits)
             {
-                //parse period text into time spans
+                // parse period text into time spans
                 item.PeriodTimespan = item.Period.ToTimeSpan();
             }
 
