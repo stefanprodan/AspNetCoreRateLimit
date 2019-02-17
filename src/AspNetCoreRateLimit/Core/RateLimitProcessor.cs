@@ -185,7 +185,11 @@ namespace AspNetCoreRateLimit
                 }
 
                 // get the most restrictive general limit for each period 
-                var generalLimits = matchingGeneralLimits.GroupBy(l => l.Period).Select(l => l.OrderBy(x => x.Limit)).Select(l => l.First()).ToList();
+                var generalLimits = matchingGeneralLimits
+                    .GroupBy(l => l.Period)
+                    .Select(l => l.OrderBy(x => x.Limit).ThenBy(x => x.Endpoint))
+                    .Select(l => l.First())
+                    .ToList();
 
                 foreach (var generalLimit in generalLimits)
                 {
