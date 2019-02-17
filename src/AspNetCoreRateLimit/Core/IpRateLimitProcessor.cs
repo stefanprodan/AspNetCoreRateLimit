@@ -13,8 +13,9 @@ namespace AspNetCoreRateLimit
         public IpRateLimitProcessor(
            IpRateLimitOptions options,
            IRateLimitCounterStore counterStore,
-           IIpPolicyStore policyStore)
-        : base(options, counterStore)
+           IIpPolicyStore policyStore,
+           IRateLimitConfiguration config)
+        : base(options, counterStore, new IpCounterKeyBuilder(options), config)
         {
             _options = options;
             _policyStore = policyStore;
@@ -50,11 +51,6 @@ namespace AspNetCoreRateLimit
             }
 
             return base.IsWhitelisted(requestIdentity);
-        }
-
-        protected override string GetCounterKey(ClientRequestIdentity requestIdentity, RateLimitRule rule)
-        {
-            return $"{_options.RateLimitCounterPrefix}_{requestIdentity.ClientIp}_{rule.Period}";
         }
     }
 }

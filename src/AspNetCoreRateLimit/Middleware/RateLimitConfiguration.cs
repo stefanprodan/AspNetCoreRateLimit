@@ -6,33 +6,44 @@ namespace AspNetCoreRateLimit
 {
     public class RateLimitConfiguration : IRateLimitConfiguration
     {
-        //public bool Enabled { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public IList<IClientResolveContributor> ClientResolvers { get; } = new List<IClientResolveContributor>();
+        public IList<IIpResolveContributor> IpResolvers { get; } = new List<IIpResolveContributor>();
 
-        public IList<IClientResolveContributor> ClientResolvers { get; }
-
-        public IList<IIpResolveContributor> IpResolvers { get; }
+        public virtual ICounterKeyBuilder EndpointCounterKeyBuilder { get; } = new PathCounterKeyBuilder();
 
         public RateLimitConfiguration(
             IHttpContextAccessor httpContextAccessor,
             IOptions<IpRateLimitOptions> ipOptions,
             IOptions<ClientRateLimitOptions> clientOptions)
         {
+            IpRateLimitOptions = ipOptions?.Value;
+            ClientRateLimitOptions = clientOptions?.Value;
+            HttpContextAccessor = httpContextAccessor;
+
             ClientResolvers = new List<IClientResolveContributor>();
-
-            if (!string.IsNullOrEmpty(clientOptions?.Value.ClientIdHeader))
-            {
-                ClientResolvers.Add(new ClientHeaderResolveContributor(httpContextAccessor, clientOptions.Value.ClientIdHeader));
-            }
-
             IpResolvers = new List<IIpResolveContributor>();
 
-            // the contributors are resolved in the order of their collection index
-            if (!string.IsNullOrEmpty(ipOptions?.Value.RealIpHeader))
+            RegisterResolvers();
+        }
+
+        protected readonly IpRateLimitOptions IpRateLimitOptions;
+        protected readonly ClientRateLimitOptions ClientRateLimitOptions;
+        protected readonly IHttpContextAccessor HttpContextAccessor;
+
+        protected virtual void RegisterResolvers()
+        {
+            if (!string.IsNullOrEmpty(ClientRateLimitOptions?.ClientIdHeader))
             {
-                IpResolvers.Add(new IpHeaderResolveContributor(httpContextAccessor, ipOptions.Value.RealIpHeader));
+                ClientResolvers.Add(new ClientHeaderResolveContributor(HttpContextAccessor, ClientRateLimitOptions.ClientIdHeader));
             }
 
-            IpResolvers.Add(new IpConnectionResolveContributor(httpContextAccessor));
+            // the contributors are resolved in the order of their collection index
+            if (!string.IsNullOrEmpty(IpRateLimitOptions?.RealIpHeader))
+            {
+                IpResolvers.Add(new IpHeaderResolveContributor(HttpContextAccessor, IpRateLimitOptions.RealIpHeader));
+            }
+
+            IpResolvers.Add(new IpConnectionResolveContributor(HttpContextAccessor));
         }
     }
 }

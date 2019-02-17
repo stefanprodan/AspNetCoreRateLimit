@@ -13,8 +13,9 @@ namespace AspNetCoreRateLimit
         public ClientRateLimitProcessor(
            ClientRateLimitOptions options,
            IRateLimitCounterStore counterStore,
-           IClientPolicyStore policyStore)
-        : base(options, counterStore)
+           IClientPolicyStore policyStore,
+           IRateLimitConfiguration config)
+        : base(options, counterStore, new ClientCounterKeyBuilder(options), config)
         {
             _options = options;
             _policyStore = policyStore;
@@ -30,11 +31,6 @@ namespace AspNetCoreRateLimit
             }
 
             return Enumerable.Empty<RateLimitRule>();
-        }
-
-        protected override string GetCounterKey(ClientRequestIdentity requestIdentity, RateLimitRule rule)
-        {
-            return $"{_options.RateLimitCounterPrefix}_{requestIdentity.ClientId}_{rule.Period}";
         }
     }
 }

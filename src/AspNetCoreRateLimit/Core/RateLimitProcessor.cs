@@ -11,13 +11,19 @@ namespace AspNetCoreRateLimit
     {
         private readonly RateLimitOptions _options;
         private readonly IRateLimitCounterStore _counterStore;
+        private readonly ICounterKeyBuilder _counterKeyBuilder;
+        private readonly IRateLimitConfiguration _config;
 
         protected RateLimitProcessor(
            RateLimitOptions options,
-           IRateLimitCounterStore counterStore)
+           IRateLimitCounterStore counterStore,
+           ICounterKeyBuilder counterKeyBuilder,
+           IRateLimitConfiguration config)
         {
             _options = options;
             _counterStore = counterStore;
+            _counterKeyBuilder = counterKeyBuilder;
+            _config = config;
         }
 
         private static readonly SemaphoreSlim Semaphore = new SemaphoreSlim(1);
@@ -47,7 +53,7 @@ namespace AspNetCoreRateLimit
                 TotalRequests = 1
             };
 
-            var counterId = ComputeCounterKey(requestIdentity, rule);
+            var counterId = BuildCounterKey(requestIdentity, rule);
 
             // serial reads and writes
             await Semaphore.WaitAsync(cancellationToken);
@@ -87,7 +93,7 @@ namespace AspNetCoreRateLimit
         public async Task<RateLimitHeaders> GetRateLimitHeadersAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken = default)
         {
             var headers = new RateLimitHeaders();
-            var counterId = ComputeCounterKey(requestIdentity, rule);
+            var counterId = BuildCounterKey(requestIdentity, rule);
             var entry = await _counterStore.GetAsync(counterId, cancellationToken);
 
             long remaining;
@@ -111,18 +117,13 @@ namespace AspNetCoreRateLimit
             return headers;
         }
 
-        protected abstract string GetCounterKey(ClientRequestIdentity requestIdentity, RateLimitRule rule);
-
-        protected string ComputeCounterKey(ClientRequestIdentity requestIdentity, RateLimitRule rule)
+        protected virtual string BuildCounterKey(ClientRequestIdentity requestIdentity, RateLimitRule rule)
         {
-            var key = GetCounterKey(requestIdentity, rule);
+            var key = _counterKeyBuilder.Build(requestIdentity, rule);
 
-            if (_options.EnableEndpointRateLimiting)
+            if (_options.EnableEndpointRateLimiting && _config.EndpointCounterKeyBuilder != null)
             {
-                key += $"_{requestIdentity.HttpVerb}_{requestIdentity.Path}";
-
-                // TODO: consider using the rule endpoint as key, this will allow to rate limit /api/values/1 and api/values/2 under same counter
-                //key += $"_{rule.Endpoint}";
+                key += _config.EndpointCounterKeyBuilder.Build(requestIdentity, rule);
             }
 
             var idBytes = System.Text.Encoding.UTF8.GetBytes(key);
@@ -137,7 +138,7 @@ namespace AspNetCoreRateLimit
             return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
         }
 
-        protected List<RateLimitRule> GetMatchingRules(ClientRequestIdentity identity, List<RateLimitRule> rules)
+        protected virtual List<RateLimitRule> GetMatchingRules(ClientRequestIdentity identity, List<RateLimitRule> rules)
         {
             var limits = new List<RateLimitRule>();
 

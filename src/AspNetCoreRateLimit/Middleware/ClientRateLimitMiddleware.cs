@@ -14,7 +14,7 @@ namespace AspNetCoreRateLimit
             IClientPolicyStore policyStore,
             IRateLimitConfiguration config,
             ILogger<ClientRateLimitMiddleware> logger)
-        : base(next, options?.Value, new ClientRateLimitProcessor(options?.Value, counterStore, policyStore), config)
+        : base(next, options?.Value, new ClientRateLimitProcessor(options?.Value, counterStore, policyStore, config), config)
         {
             _logger = logger;
         }
