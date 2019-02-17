@@ -26,7 +26,9 @@ namespace AspNetCoreRateLimit
             _config = config;
         }
 
-        private static readonly SemaphoreSlim Semaphore = new SemaphoreSlim(1);
+        /// The key-lock used for limiting requests.
+        /// </summary>
+        private static readonly AsyncKeyLock AsyncLock = new AsyncKeyLock();
 
         public virtual bool IsWhitelisted(ClientRequestIdentity requestIdentity)
         {
@@ -55,10 +57,8 @@ namespace AspNetCoreRateLimit
 
             var counterId = BuildCounterKey(requestIdentity, rule);
 
-            // serial reads and writes
-            await Semaphore.WaitAsync(cancellationToken);
-
-            try
+            // serial reads and writes on same key
+            using (await AsyncLock.WriterLockAsync(counterId).ConfigureAwait(false))
             {
                 var entry = await _counterStore.GetAsync(counterId, cancellationToken);
 
@@ -81,10 +81,6 @@ namespace AspNetCoreRateLimit
 
                 // stores: id (string) - timestamp (datetime) - total_requests (long)
                 await _counterStore.SetAsync(counterId, counter, rule.PeriodTimespan.Value, cancellationToken);
-            }
-            finally
-            {
-                Semaphore.Release();
             }
 
             return counter;

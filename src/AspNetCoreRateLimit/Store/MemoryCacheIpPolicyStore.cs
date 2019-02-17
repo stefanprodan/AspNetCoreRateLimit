@@ -23,7 +23,7 @@ namespace AspNetCoreRateLimit
             // on startup, save the IP rules defined in appsettings
             if (_options != null && _policies != null)
             {
-                await SetAsync($"{_options.IpPolicyPrefix}", _policies);
+                await SetAsync($"{_options.IpPolicyPrefix}", _policies).ConfigureAwait(false);
             }
         }
     }
