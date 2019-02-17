@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 
 namespace AspNetCoreRateLimit
 {
@@ -12,12 +11,10 @@ namespace AspNetCoreRateLimit
 
         public static string RetryAfterFrom(this DateTime timestamp, RateLimitRule rule)
         {
-            var secondsPast = Convert.ToInt32((DateTime.UtcNow - timestamp).TotalSeconds);
-            var retryAfter = Convert.ToInt32(rule.PeriodTimespan.Value.TotalSeconds);
+            var diff = timestamp + rule.PeriodTimespan.Value - DateTime.UtcNow;
+            var seconds = Math.Max(diff.TotalSeconds, 1);
 
-            retryAfter = retryAfter > 1 ? retryAfter - secondsPast : 1;
-
-            return retryAfter.ToString(CultureInfo.InvariantCulture);
+            return $"{seconds:F0}";
         }
 
         public static TimeSpan ToTimeSpan(this string timeSpan)
