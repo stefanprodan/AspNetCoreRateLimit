@@ -10,7 +10,8 @@ namespace AspNetCoreRateLimit
         private readonly IpRateLimitOptions _options;
         private readonly IRateLimitStore<IpRateLimitPolicies> _policyStore;
 
-        public IpRateLimitProcessor(IpRateLimitOptions options,
+        public IpRateLimitProcessor(
+           IpRateLimitOptions options,
            IRateLimitCounterStore counterStore,
            IIpPolicyStore policyStore)
         : base(options, counterStore)

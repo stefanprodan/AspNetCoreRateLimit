@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace AspNetCoreRateLimit.Demo
 {
+    // https://andrewlock.net/running-async-tasks-on-app-startup-in-asp-net-core-part-1/
+    // https://andrewlock.net/running-async-tasks-on-app-startup-in-asp-net-core-part-2/
     public class Program
     {
         public static async Task Main(string[] args)

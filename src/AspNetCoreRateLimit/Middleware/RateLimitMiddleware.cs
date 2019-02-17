@@ -11,15 +11,18 @@ namespace AspNetCoreRateLimit
         private readonly RequestDelegate _next;
         private readonly TProcessor _processor;
         private readonly RateLimitOptions _options;
+        private readonly IRateLimitConfiguration _config;
 
         protected RateLimitMiddleware(
             RequestDelegate next,
             RateLimitOptions options,
-            TProcessor processor)
+            TProcessor processor,
+            IRateLimitConfiguration config)
         {
             _next = next;
             _options = options;
             _processor = processor;
+            _config = config;
         }
 
         public async Task Invoke(HttpContext context)
@@ -32,7 +35,7 @@ namespace AspNetCoreRateLimit
             }
 
             // compute identity from request
-            var identity = SetIdentity(context);
+            var identity = ResolveIdentity(context);
 
             // check white list
             if (_processor.IsWhitelisted(identity))
@@ -101,37 +104,43 @@ namespace AspNetCoreRateLimit
             await _next.Invoke(context);
         }
 
-        public virtual ClientRequestIdentity SetIdentity(HttpContext httpContext)
+        public virtual ClientRequestIdentity ResolveIdentity(HttpContext httpContext)
         {
-            //var clientId = "anon";
-            //if (httpContext.Request.Headers.Keys.Contains(_options.ClientIdHeader, StringComparer.CurrentCultureIgnoreCase))
-            //{
-            //    clientId = httpContext.Request.Headers[_options.ClientIdHeader].First();
-            //}
+            string clientIp = null;
+            string clientId = null;
 
-            //string clientIp;
-            //try
-            //{
-            //    var ip = _ipParser.GetClientIp(httpContext);
+            if (_config.ClientResolvers?.Any() == true)
+            {
+                foreach(var resolver in _config.ClientResolvers)
+                {
+                    clientId = resolver.ResolveClient();
 
-            //    if (ip == null)
-            //    {
-            //        throw new Exception("IpRateLimitMiddleware can't parse caller IP");
-            //    }
+                    if (!string.IsNullOrEmpty(clientId))
+                    {
+                        break;
+                    }
+                }
+            }
 
-            //    clientIp = ip.ToString();
-            //}
-            //catch (Exception ex)
-            //{
-            //    throw new Exception("IpRateLimitMiddleware can't parse caller IP", ex);
-            //}
+            if (_config.IpResolvers?.Any() == true)
+            {
+                foreach (var resolver in _config.IpResolvers)
+                {
+                    clientIp = resolver.ResolveIp();
+
+                    if (!string.IsNullOrEmpty(clientIp))
+                    {
+                        break;
+                    }
+                }
+            }
 
             return new ClientRequestIdentity
             {
-                //ClientIp = clientIp,
+                ClientIp = clientIp,
                 Path = httpContext.Request.Path.ToString().ToLowerInvariant(),
                 HttpVerb = httpContext.Request.Method.ToLowerInvariant(),
-                //ClientId = clientId
+                ClientId = clientId
             };
         }
 

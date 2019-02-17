@@ -165,6 +165,7 @@ namespace AspNetCoreRateLimit
             if (_options.GeneralRules != null)
             {
                 var matchingGeneralLimits = new List<RateLimitRule>();
+
                 if (_options.EnableEndpointRateLimiting)
                 {
                     // search for rules with endpoints like "*" and "*:/matching_path" in general rules
