@@ -29,7 +29,7 @@ namespace AspNetCoreRateLimit
             if (policies != null && policies.IpRules != null && policies.IpRules.Any())
             {
                 // search for rules with IP intervals containing client IP
-                var matchPolicies = policies.IpRules.Where(r => IpParser.ContainsIp(r.Ip, identity.ClientIp)).AsEnumerable();
+                var matchPolicies = policies.IpRules.Where(r => IpParser.ContainsIp(r.Ip, identity.ClientIp));
                 var rules = new List<RateLimitRule>();
 
                 foreach (var item in matchPolicies)

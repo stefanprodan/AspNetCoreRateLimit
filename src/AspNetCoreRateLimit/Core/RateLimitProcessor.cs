@@ -145,17 +145,17 @@ namespace AspNetCoreRateLimit
             if (_options.EnableEndpointRateLimiting)
             {
                 // search for rules with endpoints like "*" and "*:/matching_path"
-                var pathLimits = rules.Where(r => $"*:{identity.Path}".IsWildcardMatch(r.Endpoint)).AsEnumerable();
+                var pathLimits = rules.Where(r => $"*:{identity.Path}".IsWildcardMatch(r.Endpoint));
                 limits.AddRange(pathLimits);
 
                 // search for rules with endpoints like "matching_verb:/matching_path"
-                var verbLimits = rules.Where(r => $"{identity.HttpVerb}:{identity.Path}".IsWildcardMatch(r.Endpoint)).AsEnumerable();
+                var verbLimits = rules.Where(r => $"{identity.HttpVerb}:{identity.Path}".IsWildcardMatch(r.Endpoint));
                 limits.AddRange(verbLimits);
             }
             else
             {
                 //ignore endpoint rules and search for global rules only
-                var genericLimits = rules.Where(r => r.Endpoint == "*").AsEnumerable();
+                var genericLimits = rules.Where(r => r.Endpoint == "*");
                 limits.AddRange(genericLimits);
             }
 
@@ -170,17 +170,17 @@ namespace AspNetCoreRateLimit
                 if (_options.EnableEndpointRateLimiting)
                 {
                     // search for rules with endpoints like "*" and "*:/matching_path" in general rules
-                    var pathLimits = _options.GeneralRules.Where(r => $"*:{identity.Path}".IsWildcardMatch(r.Endpoint)).AsEnumerable();
+                    var pathLimits = _options.GeneralRules.Where(r => $"*:{identity.Path}".IsWildcardMatch(r.Endpoint));
                     matchingGeneralLimits.AddRange(pathLimits);
 
                     // search for rules with endpoints like "matching_verb:/matching_path" in general rules
-                    var verbLimits = _options.GeneralRules.Where(r => $"{identity.HttpVerb}:{identity.Path}".IsWildcardMatch(r.Endpoint)).AsEnumerable();
+                    var verbLimits = _options.GeneralRules.Where(r => $"{identity.HttpVerb}:{identity.Path}".IsWildcardMatch(r.Endpoint));
                     matchingGeneralLimits.AddRange(verbLimits);
                 }
                 else
                 {
                     //ignore endpoint rules and search for global rules in general rules
-                    var genericLimits = _options.GeneralRules.Where(r => r.Endpoint == "*").AsEnumerable();
+                    var genericLimits = _options.GeneralRules.Where(r => r.Endpoint == "*");
                     matchingGeneralLimits.AddRange(genericLimits);
                 }
 

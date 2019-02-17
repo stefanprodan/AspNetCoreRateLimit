@@ -38,7 +38,17 @@ namespace AspNetCoreRateLimit
 
         public Task SetAsync(string id, T entry, TimeSpan? expirationTime = null, CancellationToken cancellationToken = default)
         {
-            _cache.Set(id, entry, expirationTime.HasValue ? new MemoryCacheEntryOptions().SetAbsoluteExpiration(expirationTime.Value) : null);
+            MemoryCacheEntryOptions options = new MemoryCacheEntryOptions
+            {
+                Priority = CacheItemPriority.NeverRemove
+            };
+
+            if (expirationTime.HasValue)
+            {
+                options.SetAbsoluteExpiration(expirationTime.Value);
+            }
+
+            _cache.Set(id, entry, options);
 
             return Task.CompletedTask;
         }
