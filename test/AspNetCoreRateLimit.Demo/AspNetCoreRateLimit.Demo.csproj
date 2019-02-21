@@ -4,9 +4,11 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
 	<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Ben.BlockingDetector" Version="0.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0-preview-19075-0444" />
   </ItemGroup>
 

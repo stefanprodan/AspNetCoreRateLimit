@@ -1,4 +1,4 @@
-﻿namespace AspNetCoreRateLimit.Core
+﻿namespace AspNetCoreRateLimit
 {
     public static class WildcardMatcher
     {

@@ -5,14 +5,14 @@ using Xunit;
 
 namespace AspNetCoreRateLimit.Tests
 {
-    public class IpRateLimitTests: IClassFixture<WebApplicationFactory<Demo.Startup>>
+    public class IpRateLimitTests: IClassFixture<RateLimitWebApplicationFactory>
     {
         private const string apiValuesPath = "/api/values";
         private const string apiRateLimitPath = "/api/ipratelimit";
 
         private readonly HttpClient _client;
 
-        public IpRateLimitTests(WebApplicationFactory<Demo.Startup> factory)
+        public IpRateLimitTests(RateLimitWebApplicationFactory factory)
         {
             _client = factory.CreateClient(options: new WebApplicationFactoryClientOptions
             {

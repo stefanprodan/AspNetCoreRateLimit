@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Threading.Tasks;
 
 namespace AspNetCoreRateLimit.Demo.Controllers
 {
@@ -16,23 +17,25 @@ namespace AspNetCoreRateLimit.Demo.Controllers
         }
 
         [HttpGet]
-        public ClientRateLimitPolicy Get()
+        public async Task<ClientRateLimitPolicy> Get()
         {
-            return _clientPolicyStore.Get($"{_options.ClientPolicyPrefix}_cl-key-1");
+            return await _clientPolicyStore.GetAsync($"{_options.ClientPolicyPrefix}_cl-key-1", HttpContext.RequestAborted);
         }
 
         [HttpPost]
-        public void Post()
+        public async Task Post()
         {
             var id = $"{_options.ClientPolicyPrefix}_cl-key-1";
-            var policy = _clientPolicyStore.Get(id);
+            var policy = await _clientPolicyStore.GetAsync(id, HttpContext.RequestAborted);
+
             policy.Rules.Add(new RateLimitRule
             {
                 Endpoint = "*/api/testpolicyupdate",
                 Period = "1h",
                 Limit = 100
             });
-            _clientPolicyStore.Set(id, policy);
+
+            await _clientPolicyStore.SetAsync(id, policy, cancellationToken: HttpContext.RequestAborted);
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace AspNetCoreRateLimit
 {
-    public class RateLimitCoreOptions
+    public class RateLimitOptions
     {
         public List<RateLimitRule> GeneralRules { get; set; }
 

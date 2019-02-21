@@ -1,5 +1,7 @@
+using Ben.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,13 +25,13 @@ namespace AspNetCoreRateLimit.Demo
             // needed to store rate limit counters and ip rules
             services.AddMemoryCache();
 
-            //configure ip rate limiting middle-ware
+            // configure ip rate limiting middle-ware
             services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
             services.Configure<IpRateLimitPolicies>(Configuration.GetSection("IpRateLimitPolicies"));
             services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
             services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
 
-            //configure client rate limiting middleware
+            // configure client rate limiting middleware
             services.Configure<ClientRateLimitOptions>(Configuration.GetSection("ClientRateLimiting"));
             services.Configure<ClientRateLimitPolicies>(Configuration.GetSection("ClientRateLimitPolicies"));
             services.AddSingleton<IClientPolicyStore, MemoryCacheClientPolicyStore>();
@@ -39,11 +41,21 @@ namespace AspNetCoreRateLimit.Demo
             ConfigurationBinder.Bind(Configuration.GetSection("ClientRateLimiting"), opt);
 
             services.AddMvc().AddNewtonsoftJson();
+
+            // https://github.com/aspnet/Hosting/issues/793
+            // the IHttpContextAccessor service is not registered by default.
+            // the clientId/clientIp resolvers use it.
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            // configure the resolvers
+            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseBlockingDetection();
+
             app.UseIpRateLimiting();
             app.UseClientRateLimiting();
 

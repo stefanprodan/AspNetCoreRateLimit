@@ -4,6 +4,6 @@ namespace AspNetCoreRateLimit
 {
     public class IpRateLimitPolicies
     {
-        public List<IpRateLimitPolicy> IpRules { get; set; }
+        public List<IpRateLimitPolicy> IpRules { get; set; } = new List<IpRateLimitPolicy>();
     }
 }
