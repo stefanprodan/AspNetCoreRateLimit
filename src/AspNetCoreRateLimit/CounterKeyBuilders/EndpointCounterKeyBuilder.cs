@@ -5,7 +5,7 @@
         public string Build(ClientRequestIdentity requestIdentity, RateLimitRule rule)
         {
             // This will allow to rate limit /api/values/1 and api/values/2 under same counter
-            return $"_{requestIdentity.HttpVerb}_{requestIdentity.Path}_{rule.Endpoint}";
+            return $"_{rule.Endpoint}";
         }
     }
 }

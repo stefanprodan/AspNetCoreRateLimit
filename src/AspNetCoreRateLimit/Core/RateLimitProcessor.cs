@@ -47,7 +47,7 @@ namespace AspNetCoreRateLimit
             return false;
         }
 
-        public async Task<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken = default)
+        public virtual async Task<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken = default)
         {
             var counter = new RateLimitCounter
             {
@@ -86,7 +86,7 @@ namespace AspNetCoreRateLimit
             return counter;
         }
 
-        public async Task<RateLimitHeaders> GetRateLimitHeadersAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken = default)
+        public virtual async Task<RateLimitHeaders> GetRateLimitHeadersAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken = default)
         {
             var headers = new RateLimitHeaders();
             var counterId = BuildCounterKey(requestIdentity, rule);
