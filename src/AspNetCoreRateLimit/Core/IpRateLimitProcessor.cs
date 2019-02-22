@@ -37,10 +37,10 @@ namespace AspNetCoreRateLimit
                     rules.AddRange(item.Rules);
                 }
 
-                return GetMatchingRules(identity, rules);
+                AddLimitsFromRules(identity, rules, limits);
             }
 
-            return Enumerable.Empty<RateLimitRule>();
+            return GetMatchingRules(identity, limits);
         }
 
         public override bool IsWhitelisted(ClientRequestIdentity requestIdentity)

@@ -134,27 +134,8 @@ namespace AspNetCoreRateLimit
             return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
         }
 
-        protected virtual List<RateLimitRule> GetMatchingRules(ClientRequestIdentity identity, List<RateLimitRule> rules)
+        protected virtual List<RateLimitRule> GetMatchingRules(ClientRequestIdentity identity, List<RateLimitRule> limits)
         {
-            var limits = new List<RateLimitRule>();
-
-            if (_options.EnableEndpointRateLimiting)
-            {
-                // search for rules with endpoints like "*" and "*:/matching_path"
-                var pathLimits = rules.Where(r => $"*:{identity.Path}".IsWildcardMatch(r.Endpoint));
-                limits.AddRange(pathLimits);
-
-                // search for rules with endpoints like "matching_verb:/matching_path"
-                var verbLimits = rules.Where(r => $"{identity.HttpVerb}:{identity.Path}".IsWildcardMatch(r.Endpoint));
-                limits.AddRange(verbLimits);
-            }
-            else
-            {
-                //ignore endpoint rules and search for global rules only
-                var genericLimits = rules.Where(r => r.Endpoint == "*");
-                limits.AddRange(genericLimits);
-            }
-
             // get the most restrictive limit for each period 
             limits = limits.GroupBy(l => l.Period).Select(l => l.OrderBy(x => x.Limit)).Select(l => l.First()).ToList();
 
@@ -211,6 +192,26 @@ namespace AspNetCoreRateLimit
             }
 
             return limits;
+        }
+
+        public virtual void AddLimitsFromRules(ClientRequestIdentity identity, List<RateLimitRule> rules, List<RateLimitRule> limits)
+        {
+            if (_options.EnableEndpointRateLimiting)
+            {
+                // search for rules with endpoints like "*" and "*:/matching_path"
+                var pathLimits = rules.Where(r => $"*:{identity.Path}".IsWildcardMatch(r.Endpoint));
+                limits.AddRange(pathLimits);
+
+                // search for rules with endpoints like "matching_verb:/matching_path"
+                var verbLimits = rules.Where(r => $"{identity.HttpVerb}:{identity.Path}".IsWildcardMatch(r.Endpoint));
+                limits.AddRange(verbLimits);
+            }
+            else
+            {
+                //ignore endpoint rules and search for global rules only
+                var genericLimits = rules.Where(r => r.Endpoint == "*");
+                limits.AddRange(genericLimits);
+            }
         }
     }
 }

@@ -25,12 +25,12 @@ namespace AspNetCoreRateLimit
         {
             var policy = await _policyStore.GetAsync($"{_options.ClientPolicyPrefix}_{identity.ClientId}", cancellationToken);
 
+            var limits = new List<RateLimitRule>();
             if (policy != null)
             {
-                return GetMatchingRules(identity, policy.Rules);
+                AddLimitsFromRules(identity, policy.Rules, limits);
             }
-
-            return Enumerable.Empty<RateLimitRule>();
+            return GetMatchingRules(identity, limits);
         }
     }
 }
