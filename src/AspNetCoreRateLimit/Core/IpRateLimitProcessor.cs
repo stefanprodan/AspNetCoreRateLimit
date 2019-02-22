@@ -27,7 +27,7 @@ namespace AspNetCoreRateLimit
 
             var rules = new List<RateLimitRule>();
 
-            if (policies != null && policies.IpRules != null && policies.IpRules.Any())
+            if (policies?.IpRules?.Any() == true)
             {
                 // search for rules with IP intervals containing client IP
                 var matchPolicies = policies.IpRules.Where(r => IpParser.ContainsIp(r.Ip, identity.ClientIp));
