@@ -134,29 +134,32 @@ namespace AspNetCoreRateLimit
             return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
         }
 
-        protected virtual List<RateLimitRule> GetMatchingRules(ClientRequestIdentity identity, List<RateLimitRule> rules)
+        protected virtual List<RateLimitRule> GetMatchingRules(ClientRequestIdentity identity, List<RateLimitRule> rules = null)
         {
             var limits = new List<RateLimitRule>();
 
-            if (_options.EnableEndpointRateLimiting)
+            if (rules?.Any() == true)
             {
-                // search for rules with endpoints like "*" and "*:/matching_path"
-                var pathLimits = rules.Where(r => $"*:{identity.Path}".IsWildcardMatch(r.Endpoint));
-                limits.AddRange(pathLimits);
+                if (_options.EnableEndpointRateLimiting)
+                {
+                    // search for rules with endpoints like "*" and "*:/matching_path"
+                    var pathLimits = rules.Where(r => $"*:{identity.Path}".IsWildcardMatch(r.Endpoint));
+                    limits.AddRange(pathLimits);
 
-                // search for rules with endpoints like "matching_verb:/matching_path"
-                var verbLimits = rules.Where(r => $"{identity.HttpVerb}:{identity.Path}".IsWildcardMatch(r.Endpoint));
-                limits.AddRange(verbLimits);
-            }
-            else
-            {
-                //ignore endpoint rules and search for global rules only
-                var genericLimits = rules.Where(r => r.Endpoint == "*");
-                limits.AddRange(genericLimits);
-            }
+                    // search for rules with endpoints like "matching_verb:/matching_path"
+                    var verbLimits = rules.Where(r => $"{identity.HttpVerb}:{identity.Path}".IsWildcardMatch(r.Endpoint));
+                    limits.AddRange(verbLimits);
+                }
+                else
+                {
+                    // ignore endpoint rules and search for global rules only
+                    var genericLimits = rules.Where(r => r.Endpoint == "*");
+                    limits.AddRange(genericLimits);
+                }
 
-            // get the most restrictive limit for each period 
-            limits = limits.GroupBy(l => l.Period).Select(l => l.OrderBy(x => x.Limit)).Select(l => l.First()).ToList();
+                // get the most restrictive limit for each period 
+                limits = limits.GroupBy(l => l.Period).Select(l => l.OrderBy(x => x.Limit)).Select(l => l.First()).ToList();
+            }
 
             // search for matching general rules
             if (_options.GeneralRules != null)

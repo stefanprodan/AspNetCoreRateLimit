@@ -25,12 +25,7 @@ namespace AspNetCoreRateLimit
         {
             var policy = await _policyStore.GetAsync($"{_options.ClientPolicyPrefix}_{identity.ClientId}", cancellationToken);
 
-            if (policy != null)
-            {
-                return GetMatchingRules(identity, policy.Rules);
-            }
-
-            return Enumerable.Empty<RateLimitRule>();
+            return GetMatchingRules(identity, policy?.Rules);
         }
     }
 }

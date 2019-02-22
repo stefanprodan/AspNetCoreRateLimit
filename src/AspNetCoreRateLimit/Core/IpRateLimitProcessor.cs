@@ -23,24 +23,22 @@ namespace AspNetCoreRateLimit
 
         public async Task<IEnumerable<RateLimitRule>> GetMatchingRulesAsync(ClientRequestIdentity identity, CancellationToken cancellationToken = default)
         {
-            var limits = new List<RateLimitRule>();
             var policies = await _policyStore.GetAsync($"{_options.IpPolicyPrefix}", cancellationToken);
+
+            var rules = new List<RateLimitRule>();
 
             if (policies != null && policies.IpRules != null && policies.IpRules.Any())
             {
                 // search for rules with IP intervals containing client IP
                 var matchPolicies = policies.IpRules.Where(r => IpParser.ContainsIp(r.Ip, identity.ClientIp));
-                var rules = new List<RateLimitRule>();
 
                 foreach (var item in matchPolicies)
                 {
                     rules.AddRange(item.Rules);
                 }
-
-                return GetMatchingRules(identity, rules);
             }
 
-            return Enumerable.Empty<RateLimitRule>();
+            return GetMatchingRules(identity, rules);
         }
 
         public override bool IsWhitelisted(ClientRequestIdentity requestIdentity)
