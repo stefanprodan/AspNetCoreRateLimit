@@ -194,7 +194,7 @@ namespace AspNetCoreRateLimit
             return limits;
         }
 
-        public virtual void AddLimitsFromRules(ClientRequestIdentity identity, List<RateLimitRule> rules, List<RateLimitRule> limits)
+        protected virtual void AddLimitsFromRules(ClientRequestIdentity identity, List<RateLimitRule> rules, List<RateLimitRule> limits)
         {
             if (_options.EnableEndpointRateLimiting)
             {
