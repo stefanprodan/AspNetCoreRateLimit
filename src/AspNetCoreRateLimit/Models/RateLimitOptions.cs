@@ -23,6 +23,11 @@ namespace AspNetCoreRateLimit
         public string QuotaExceededMessage { get; set; }
 
         /// <summary>
+        /// Gets or sets a model that represents the QuotaExceeded response (content-type, content, status code).
+        /// </summary>
+        public QuotaExceededResponse QuotaExceededResponse { get; set; }
+
+        /// <summary>
         /// Gets or sets the counter prefix, used to compose the rate limit counter cache key
         /// </summary>
         public string RateLimitCounterPrefix { get; set; } = "crlc";

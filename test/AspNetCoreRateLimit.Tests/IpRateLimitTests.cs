@@ -51,6 +51,7 @@ namespace AspNetCoreRateLimit.Tests
             var ip = "84.247.85.228";
 
             int responseStatusCode = 0;
+            string content = null;
 
             // Act    
             for (int i = 0; i < 4; i++)
@@ -60,10 +61,14 @@ namespace AspNetCoreRateLimit.Tests
 
                 var response = await _client.SendAsync(request);
                 responseStatusCode = (int)response.StatusCode;
+                content = await response.Content.ReadAsStringAsync();
             }
 
             // Assert
             Assert.Equal(429, responseStatusCode);
+            Assert.Equal(
+                "{ \"message\": \"Whoa! Calm down, cowboy!\", \"details\": \"Quota exceeded. Maximum allowed: 2 per 1s. Please try again in 1 second(s).\" }",
+                content);
         }
 
         [Fact]
