@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -122,16 +124,14 @@ namespace AspNetCoreRateLimit
                 key += _config.EndpointCounterKeyBuilder.Build(requestIdentity, rule);
             }
 
-            var idBytes = System.Text.Encoding.UTF8.GetBytes(key);
+            var bytes = Encoding.UTF8.GetBytes(key);
 
-            byte[] hashBytes;
-
-            using (var algorithm = System.Security.Cryptography.SHA1.Create())
+            using (var algorithm = new SHA1Managed())
             {
-                hashBytes = algorithm.ComputeHash(idBytes);
-            }
+                var hash = algorithm.ComputeHash(bytes);
 
-            return BitConverter.ToString(hashBytes).Replace("-", string.Empty);
+                return Convert.ToBase64String(hash);
+            }
         }
 
         protected virtual List<RateLimitRule> GetMatchingRules(ClientRequestIdentity identity, List<RateLimitRule> rules = null)
