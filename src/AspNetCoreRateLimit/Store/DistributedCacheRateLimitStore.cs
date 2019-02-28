@@ -17,10 +17,14 @@ namespace AspNetCoreRateLimit
 
         public Task SetAsync(string id, T entry, TimeSpan? expirationTime = null, CancellationToken cancellationToken = default)
         {
-            return _cache.SetStringAsync(id,
-                JsonConvert.SerializeObject(entry),
-                expirationTime.HasValue ? new DistributedCacheEntryOptions().SetAbsoluteExpiration(expirationTime.Value) : null,
-                cancellationToken);
+            var options = new DistributedCacheEntryOptions();
+
+            if (expirationTime.HasValue)
+            {
+                options.SetAbsoluteExpiration(expirationTime.Value);
+            }
+
+            return _cache.SetStringAsync(id, JsonConvert.SerializeObject(entry), options, cancellationToken);
         }
 
         public async Task<bool> ExistsAsync(string id, CancellationToken cancellationToken = default)

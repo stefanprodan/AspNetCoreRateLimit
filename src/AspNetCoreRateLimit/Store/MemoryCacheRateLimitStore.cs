@@ -38,7 +38,7 @@ namespace AspNetCoreRateLimit
 
         public Task SetAsync(string id, T entry, TimeSpan? expirationTime = null, CancellationToken cancellationToken = default)
         {
-            MemoryCacheEntryOptions options = new MemoryCacheEntryOptions
+            var options = new MemoryCacheEntryOptions
             {
                 Priority = CacheItemPriority.NeverRemove
             };
