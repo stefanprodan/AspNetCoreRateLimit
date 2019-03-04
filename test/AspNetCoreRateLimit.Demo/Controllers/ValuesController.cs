@@ -8,6 +8,7 @@ namespace AspNetCoreRateLimit.Demo.Controllers
     {
         // GET api/values
         [HttpGet]
+        [IpRateLimit(Limit = 1, Period = "1s")]
         public IEnumerable<string> Get()
         {
             return new string[] { "value1", "value2" };

@@ -40,7 +40,16 @@ namespace AspNetCoreRateLimit.Demo
             var opt = new ClientRateLimitOptions();
             ConfigurationBinder.Bind(Configuration.GetSection("ClientRateLimiting"), opt);
 
-            services.AddMvc().AddNewtonsoftJson();
+            services.AddMvc(options =>
+            {
+                // register filters for inline controller attributes
+
+                // [IpRateLimit()]
+                options.Filters.Add<IpRateLimitAsyncActionFilter>();
+                // [ClientRateLimit()]
+                options.Filters.Add<ClientRateLimitAsyncActionFilter>();
+
+            }).AddNewtonsoftJson();
 
             // https://github.com/aspnet/Hosting/issues/793
             // the IHttpContextAccessor service is not registered by default.

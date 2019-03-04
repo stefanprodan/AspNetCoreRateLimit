@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,29 +9,26 @@ namespace AspNetCoreRateLimit
     public abstract class RateLimitMiddleware<TProcessor>
         where TProcessor : IRateLimitProcessor
     {
-        private readonly RequestDelegate _next;
         private readonly TProcessor _processor;
         private readonly RateLimitOptions _options;
         private readonly IRateLimitConfiguration _config;
 
         protected RateLimitMiddleware(
-            RequestDelegate next,
             RateLimitOptions options,
             TProcessor processor,
             IRateLimitConfiguration config)
         {
-            _next = next;
             _options = options;
             _processor = processor;
             _config = config;
         }
 
-        public async Task Invoke(HttpContext context)
+        public virtual async Task ThrottleAsync(HttpContext context, Func<Task> next, RateLimitRule inlineRule = null)
         {
             // check if rate limiting is enabled
-            if (_options == null)
+            if (_options == null && inlineRule == null)
             {
-                await _next.Invoke(context);
+                await next();
                 return;
             }
 
@@ -40,19 +38,23 @@ namespace AspNetCoreRateLimit
             // check white list
             if (_processor.IsWhitelisted(identity))
             {
-                await _next.Invoke(context);
+                await next();
                 return;
             }
 
-            var rules = await _processor.GetMatchingRulesAsync(identity, context.RequestAborted);
+            var rules = inlineRule == null ? 
+                await _processor.GetMatchingRulesAsync(identity, context.RequestAborted) :
+                new List<RateLimitRule> { inlineRule };
+
+            var ruleCounters = new Dictionary<RateLimitRule, RateLimitCounter>();
 
             foreach (var rule in rules)
             {
+                // increment counter
+                var counter = await _processor.ProcessRequestAsync(identity, rule, context.RequestAborted);
+
                 if (rule.Limit > 0)
                 {
-                    // increment counter
-                    var counter = await _processor.ProcessRequestAsync(identity, rule, context.RequestAborted);
-
                     // check if key expired
                     if (counter.Timestamp + rule.PeriodTimespan.Value < DateTime.UtcNow)
                     {
@@ -77,9 +79,6 @@ namespace AspNetCoreRateLimit
                 // if limit is zero or less, block the request.
                 else
                 {
-                    // process request count
-                    var counter = await _processor.ProcessRequestAsync(identity, rule, context.RequestAborted);
-
                     // log blocked request
                     LogBlockedRequest(context, identity, counter, rule);
 
@@ -88,20 +87,38 @@ namespace AspNetCoreRateLimit
 
                     return;
                 }
+
+                ruleCounters.Add(rule, counter);
             }
 
             // set X-Rate-Limit headers for the longest period
-            if (rules.Any() && !_options.DisableRateLimitHeaders)
+            if (ruleCounters.Any() && !_options.DisableRateLimitHeaders)
             {
-                var rule = rules.OrderByDescending(x => x.PeriodTimespan.Value).First();
-                var headers = await _processor.GetRateLimitHeadersAsync(identity, rule, context.RequestAborted);
+                var ruleHeaders = ruleCounters.OrderByDescending(x => x.Key.PeriodTimespan).FirstOrDefault();
+
+                var headers = _processor.GetRateLimitHeaders(ruleHeaders.Value, ruleHeaders.Key, context.RequestAborted);
 
                 headers.Context = context;
 
                 context.Response.OnStarting(SetRateLimitHeaders, state: headers);
             }
 
-            await _next.Invoke(context);
+            await next();
+        }
+
+        public virtual RateLimitRule GetDeclaredRule(HttpContext httpContext, RateLimitAttribute attribute)
+        {
+            if (attribute == null)
+            {
+                return null;
+            }
+
+            return new RateLimitRule
+            {
+                Limit = attribute.Limit,
+                Period = attribute.Period,
+                Endpoint = $"{httpContext.Request.Method.ToLowerInvariant()}:{httpContext.Request.Path.ToString().ToLowerInvariant()}"
+            };
         }
 
         public virtual ClientRequestIdentity ResolveIdentity(HttpContext httpContext)

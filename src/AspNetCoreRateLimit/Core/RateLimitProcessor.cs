@@ -88,19 +88,17 @@ namespace AspNetCoreRateLimit
             return counter;
         }
 
-        public virtual async Task<RateLimitHeaders> GetRateLimitHeadersAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken = default)
+        public virtual RateLimitHeaders GetRateLimitHeaders(RateLimitCounter? counter, RateLimitRule rule, CancellationToken cancellationToken = default)
         {
             var headers = new RateLimitHeaders();
-            var counterId = BuildCounterKey(requestIdentity, rule);
-            var entry = await _counterStore.GetAsync(counterId, cancellationToken);
 
             long remaining;
             DateTime reset;
 
-            if (entry.HasValue)
+            if (counter.HasValue)
             {
-                reset = entry.Value.Timestamp + (rule.PeriodTimespan ?? rule.Period.ToTimeSpan());
-                remaining = rule.Limit - entry.Value.TotalRequests;
+                reset = counter.Value.Timestamp + (rule.PeriodTimespan ?? rule.Period.ToTimeSpan());
+                remaining = rule.Limit - counter.Value.TotalRequests;
             }
             else
             {
@@ -158,7 +156,7 @@ namespace AspNetCoreRateLimit
                 }
 
                 // get the most restrictive limit for each period 
-                limits = limits.GroupBy(l => l.Period).Select(l => l.OrderBy(x => x.Limit)).Select(l => l.First()).ToList();
+                limits = limits.GroupBy(l => l.Period).Select(r => r.OrderBy(x => x.Limit)).Select(r => r.First()).ToList();
             }
 
             // search for matching general rules

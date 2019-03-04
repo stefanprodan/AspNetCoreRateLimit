@@ -1,16 +1,17 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace AspNetCoreRateLimit
 {
-    public class ClientRateLimitMiddleware : RateLimitMiddleware<ClientRateLimitProcessor>
+    public class ClientRateLimitAsyncActionFilter : RateLimitMiddleware<ClientRateLimitProcessor>, IAsyncActionFilter
     {
-        private readonly RequestDelegate _next;
         private readonly ILogger<ClientRateLimitMiddleware> _logger;
 
-        public ClientRateLimitMiddleware(RequestDelegate next,
+        public ClientRateLimitAsyncActionFilter(
             IOptions<ClientRateLimitOptions> options,
             IRateLimitCounterStore counterStore,
             IClientPolicyStore policyStore,
@@ -18,13 +19,20 @@ namespace AspNetCoreRateLimit
             ILogger<ClientRateLimitMiddleware> logger)
         : base(options?.Value, new ClientRateLimitProcessor(options?.Value, counterStore, policyStore, config), config)
         {
-            _next = next;
             _logger = logger;
         }
 
-        public virtual Task Invoke(HttpContext context)
+        public Task OnActionExecutionAsync(
+            ActionExecutingContext context,
+            ActionExecutionDelegate next)
         {
-            return base.ThrottleAsync(context, () => _next.Invoke(context));
+            var rateLimitAttribute = context.ActionDescriptor.EndpointMetadata
+                                        .OfType<ClientRateLimitAttribute>()
+                                        .FirstOrDefault();
+
+            var rateLimitRule = base.GetDeclaredRule(context.HttpContext, rateLimitAttribute);
+
+            return base.ThrottleAsync(context.HttpContext, () => next(), rateLimitRule);
         }
 
         protected override void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule)
