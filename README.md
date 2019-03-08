@@ -23,6 +23,7 @@ Rate limiting based on client ID
 - [Defining rate limit rules](https://github.com/stefanprodan/AspNetCoreRateLimit/wiki/ClientRateLimitMiddleware#defining-rate-limit-rules)
 - [Behavior](https://github.com/stefanprodan/AspNetCoreRateLimit/wiki/ClientRateLimitMiddleware#behavior)
 - [Update rate limits at runtime](https://github.com/stefanprodan/AspNetCoreRateLimit/wiki/ClientRateLimitMiddleware#update-rate-limits-at-runtime)
+- [Api Response Change File](https://github.com/tapos007/AspNetCoreRateLimit/wiki/Rate-Limit-Library-response-update)
 
 Advanced configuration
 
