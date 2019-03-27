@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace AspNetCoreRateLimit.Demo
 {
@@ -38,7 +39,7 @@ namespace AspNetCoreRateLimit.Demo
             //services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
 
             var opt = new ClientRateLimitOptions();
-            ConfigurationBinder.Bind(Configuration.GetSection("ClientRateLimiting"), opt);
+            Configuration.GetSection("ClientRateLimiting").Bind(opt);
 
             services.AddMvc().AddNewtonsoftJson();
 
@@ -52,7 +53,7 @@ namespace AspNetCoreRateLimit.Demo
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseBlockingDetection();
 

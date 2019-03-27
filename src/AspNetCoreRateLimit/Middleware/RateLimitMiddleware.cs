@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -46,13 +47,15 @@ namespace AspNetCoreRateLimit
 
             var rules = await _processor.GetMatchingRulesAsync(identity, context.RequestAborted);
 
+            var rulesDict = new Dictionary<RateLimitRule, RateLimitCounter>();
+
             foreach (var rule in rules)
             {
+                // increment counter		
+                var counter = await _processor.ProcessRequestAsync(identity, rule, context.RequestAborted);
+
                 if (rule.Limit > 0)
                 {
-                    // increment counter
-                    var counter = await _processor.ProcessRequestAsync(identity, rule, context.RequestAborted);
-
                     // check if key expired
                     if (counter.Timestamp + rule.PeriodTimespan.Value < DateTime.UtcNow)
                     {
@@ -77,9 +80,6 @@ namespace AspNetCoreRateLimit
                 // if limit is zero or less, block the request.
                 else
                 {
-                    // process request count
-                    var counter = await _processor.ProcessRequestAsync(identity, rule, context.RequestAborted);
-
                     // log blocked request
                     LogBlockedRequest(context, identity, counter, rule);
 
@@ -88,13 +88,15 @@ namespace AspNetCoreRateLimit
 
                     return;
                 }
+
+                rulesDict.Add(rule, counter);
             }
 
             // set X-Rate-Limit headers for the longest period
-            if (rules.Any() && !_options.DisableRateLimitHeaders)
+            if (rulesDict.Any() && !_options.DisableRateLimitHeaders)
             {
-                var rule = rules.OrderByDescending(x => x.PeriodTimespan.Value).First();
-                var headers = await _processor.GetRateLimitHeadersAsync(identity, rule, context.RequestAborted);
+                var rule = rulesDict.OrderByDescending(x => x.Key.PeriodTimespan).FirstOrDefault();
+                var headers = _processor.GetRateLimitHeaders(rule.Value, rule.Key, context.RequestAborted);
 
                 headers.Context = context;
 

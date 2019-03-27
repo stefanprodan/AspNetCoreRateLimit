@@ -29,7 +29,6 @@ namespace AspNetCoreRateLimit
         }
 
         /// The key-lock used for limiting requests.
-        /// </summary>
         private static readonly AsyncKeyLock AsyncLock = new AsyncKeyLock();
 
         public virtual bool IsWhitelisted(ClientRequestIdentity requestIdentity)
@@ -88,19 +87,17 @@ namespace AspNetCoreRateLimit
             return counter;
         }
 
-        public virtual async Task<RateLimitHeaders> GetRateLimitHeadersAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken = default)
+        public virtual RateLimitHeaders GetRateLimitHeaders(RateLimitCounter? counter, RateLimitRule rule, CancellationToken cancellationToken = default)
         {
             var headers = new RateLimitHeaders();
-            var counterId = BuildCounterKey(requestIdentity, rule);
-            var entry = await _counterStore.GetAsync(counterId, cancellationToken);
 
             long remaining;
             DateTime reset;
 
-            if (entry.HasValue)
+            if (counter.HasValue)
             {
-                reset = entry.Value.Timestamp + (rule.PeriodTimespan ?? rule.Period.ToTimeSpan());
-                remaining = rule.Limit - entry.Value.TotalRequests;
+                reset = counter.Value.Timestamp + (rule.PeriodTimespan ?? rule.Period.ToTimeSpan());
+                remaining = rule.Limit - counter.Value.TotalRequests;
             }
             else
             {
