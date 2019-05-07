@@ -8,6 +8,8 @@ namespace AspNetCoreRateLimit
 
         IList<IIpResolveContributor> IpResolvers { get; }
 
+        IList<IMPResolveContributor> MPResolvers { get; }
+
         ICounterKeyBuilder EndpointCounterKeyBuilder { get; }
     }
 }

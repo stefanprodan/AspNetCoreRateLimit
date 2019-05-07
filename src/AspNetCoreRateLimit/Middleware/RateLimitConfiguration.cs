@@ -9,25 +9,31 @@ namespace AspNetCoreRateLimit
         public IList<IClientResolveContributor> ClientResolvers { get; } = new List<IClientResolveContributor>();
         public IList<IIpResolveContributor> IpResolvers { get; } = new List<IIpResolveContributor>();
 
+        public IList<IMPResolveContributor> MPResolvers { get; } = new List<IMPResolveContributor>();
+
         public virtual ICounterKeyBuilder EndpointCounterKeyBuilder { get; } = new PathCounterKeyBuilder();
 
         public RateLimitConfiguration(
             IHttpContextAccessor httpContextAccessor,
             IOptions<IpRateLimitOptions> ipOptions,
-            IOptions<ClientRateLimitOptions> clientOptions)
+            IOptions<ClientRateLimitOptions> clientOptions,
+            IOptions<MPRateLimitOptions> mpOptions)
         {
             IpRateLimitOptions = ipOptions?.Value;
             ClientRateLimitOptions = clientOptions?.Value;
+            MPRateLimitOptions = mpOptions?.Value;
             HttpContextAccessor = httpContextAccessor;
 
             ClientResolvers = new List<IClientResolveContributor>();
             IpResolvers = new List<IIpResolveContributor>();
+            MPResolvers = new List<IMPResolveContributor>();
 
             RegisterResolvers();
         }
 
         protected readonly IpRateLimitOptions IpRateLimitOptions;
         protected readonly ClientRateLimitOptions ClientRateLimitOptions;
+        protected readonly MPRateLimitOptions MPRateLimitOptions;
         protected readonly IHttpContextAccessor HttpContextAccessor;
 
         protected virtual void RegisterResolvers()
@@ -44,6 +50,13 @@ namespace AspNetCoreRateLimit
             }
 
             IpResolvers.Add(new IpConnectionResolveContributor(HttpContextAccessor));
+
+            //MP header resolvers
+
+            if(!string.IsNullOrEmpty(MPRateLimitOptions?.MPRateHeader))
+            {
+                MPResolvers.Add(new MPHeaderResolveContributor(HttpContextAccessor, MPRateLimitOptions.MPRateHeader));
+            }
         }
     }
 }

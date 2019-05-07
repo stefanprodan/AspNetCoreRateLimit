@@ -2,23 +2,26 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace AspNetCoreRateLimit.Tests
 {
     public class ClientRateLimitTests : IClassFixture<RateLimitWebApplicationFactory>
     {
+        private readonly ITestOutputHelper output;
         private const string apiPath = "/api/clients";
         private const string apiRateLimitPath = "/api/clientratelimit";
         private const string ip = "::1";
 
         private readonly HttpClient _client;
 
-        public ClientRateLimitTests(RateLimitWebApplicationFactory factory)
+        public ClientRateLimitTests(RateLimitWebApplicationFactory factory, ITestOutputHelper output)
         {
             _client = factory.CreateClient(options: new WebApplicationFactoryClientOptions
             {
                 BaseAddress = new System.Uri("https://localhost:44304")
             });
+            this.output = output;
         }
 
         [Theory]
@@ -61,15 +64,18 @@ namespace AspNetCoreRateLimit.Tests
                 var request = new HttpRequestMessage(HttpMethod.Post, apiPath);
                 request.Headers.Add("X-ClientId", clientId);
                 request.Headers.Add("X-Real-IP", ip);
+                request.Headers.Add("X-UIPATH-Metadata", "0");
 
                 var response = await _client.SendAsync(request);
                 responseStatusCode = (int)response.StatusCode;
                 content = await response.Content.ReadAsStringAsync();
+                output.WriteLine(i+"-"+content);
             }
 
             // Assert
             Assert.Equal(429, responseStatusCode);
             Assert.Contains(keyword, content);
+
         }
 
         [Fact]
@@ -79,7 +85,7 @@ namespace AspNetCoreRateLimit.Tests
             var clientId = "cl-key-1";
             int responseStatusCode = 0;
             var content = string.Empty;
-            var keyword = "5m";
+            var keyword = "6m";
 
             // Act    
             for (int i = 0; i < 4; i++)
@@ -88,9 +94,11 @@ namespace AspNetCoreRateLimit.Tests
                 request.Headers.Add("X-ClientId", clientId);
                 request.Headers.Add("X-Real-IP", ip);
 
+
                 var response = await _client.SendAsync(request);
                 responseStatusCode = (int)response.StatusCode;
                 content = await response.Content.ReadAsStringAsync();
+                output.WriteLine(i +"->" + response);
             }
 
             // Assert
@@ -112,6 +120,7 @@ namespace AspNetCoreRateLimit.Tests
                 var request = new HttpRequestMessage(HttpMethod.Post, apiPath);
                 request.Headers.Add("X-ClientId", clientId);
                 request.Headers.Add("X-Real-IP", ip);
+                request.Headers.Add("X-UIPATH-Metadata", "0");
 
                 var response = await _client.SendAsync(request);
                 responseStatusCode = (int)response.StatusCode;

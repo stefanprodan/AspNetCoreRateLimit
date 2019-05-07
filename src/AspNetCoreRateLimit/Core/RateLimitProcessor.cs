@@ -53,7 +53,8 @@ namespace AspNetCoreRateLimit
             var counter = new RateLimitCounter
             {
                 Timestamp = DateTime.UtcNow,
-                TotalRequests = 1
+                TotalRequests = 1,
+                TotalMPRequests = requestIdentity.MPValue
             };
 
             var counterId = BuildCounterKey(requestIdentity, rule);
@@ -63,19 +64,29 @@ namespace AspNetCoreRateLimit
             {
                 var entry = await _counterStore.GetAsync(counterId, cancellationToken);
 
+                long totalRequests;
+                long totalMPRequests = 0;
+
                 if (entry.HasValue)
                 {
                     // entry has not expired
                     if (entry.Value.Timestamp + rule.PeriodTimespan.Value >= DateTime.UtcNow)
                     {
+                        // increment MP request count
+                        if (Convert.ToInt64(0) !=  requestIdentity.MPValue)
+                        {
+                            totalMPRequests = entry.Value.TotalMPRequests + requestIdentity.MPValue;
+                        }
+
                         // increment request count
-                        var totalRequests = entry.Value.TotalRequests + 1;
+                        totalRequests = entry.Value.TotalRequests + 1;
 
                         // deep copy
                         counter = new RateLimitCounter
                         {
                             Timestamp = entry.Value.Timestamp,
-                            TotalRequests = totalRequests
+                            TotalRequests = totalRequests,
+                            TotalMPRequests = totalMPRequests
                         };
                     }
                 }
@@ -97,7 +108,7 @@ namespace AspNetCoreRateLimit
             if (counter.HasValue)
             {
                 reset = counter.Value.Timestamp + (rule.PeriodTimespan ?? rule.Period.ToTimeSpan());
-                remaining = rule.Limit - counter.Value.TotalRequests;
+                remaining = rule.Limit - (counter.Value.TotalMPRequests.Equals(0) ? counter.Value.TotalRequests : counter.Value.TotalMPRequests);
             }
             else
             {

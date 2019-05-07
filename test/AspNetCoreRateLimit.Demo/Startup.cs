@@ -29,6 +29,7 @@ namespace AspNetCoreRateLimit.Demo
             // configure ip rate limiting middle-ware
             services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
             services.Configure<IpRateLimitPolicies>(Configuration.GetSection("IpRateLimitPolicies"));
+
             services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
             services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
 
@@ -37,6 +38,11 @@ namespace AspNetCoreRateLimit.Demo
             services.Configure<ClientRateLimitPolicies>(Configuration.GetSection("ClientRateLimitPolicies"));
             services.AddSingleton<IClientPolicyStore, MemoryCacheClientPolicyStore>();
             //services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+
+            //configure MP rate limit middleware
+            services.Configure<MPRateLimitOptions>(Configuration.GetSection("MPRateLimiting"));
+            services.Configure<MPRateLimitPolicies>(Configuration.GetSection("MPRateLimitPolicies"));
+            services.AddSingleton<IMPPolicyStore, MemoryCacheMPPolicyStore>();
 
             var opt = new ClientRateLimitOptions();
             Configuration.GetSection("ClientRateLimiting").Bind(opt);
@@ -59,6 +65,9 @@ namespace AspNetCoreRateLimit.Demo
 
             app.UseIpRateLimiting();
             app.UseClientRateLimiting();
+
+            // enable mp rate middleware 
+            app.UseMPRateLimiting();
 
             if (env.IsDevelopment())
             {

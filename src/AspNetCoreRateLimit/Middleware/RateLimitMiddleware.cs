@@ -62,8 +62,8 @@ namespace AspNetCoreRateLimit
                         continue;
                     }
 
-                    // check if limit is reached
-                    if (counter.TotalRequests > rule.Limit)
+                    // check if any of the ip/client/MP rate limit is reached
+                    if (counter.TotalRequests > rule.Limit || counter.TotalMPRequests > rule.Limit)
                     {
                         //compute retry after value
                         var retryAfter = counter.Timestamp.RetryAfterFrom(rule);
@@ -110,6 +110,7 @@ namespace AspNetCoreRateLimit
         {
             string clientIp = null;
             string clientId = null;
+            long MPValue = 0;
 
             if (_config.ClientResolvers?.Any() == true)
             {
@@ -137,12 +138,25 @@ namespace AspNetCoreRateLimit
                 }
             }
 
+            if(_config.MPResolvers?.Any() == true)
+            {
+                foreach(var resolver in _config.MPResolvers)
+                {
+                    MPValue = Convert.ToInt64(resolver.ResolveMP());
+                    if (MPValue <0)
+                    {
+                        break;
+                    }
+                }
+            }
+        
             return new ClientRequestIdentity
             {
                 ClientIp = clientIp,
                 Path = httpContext.Request.Path.ToString().ToLowerInvariant(),
                 HttpVerb = httpContext.Request.Method.ToLowerInvariant(),
-                ClientId = clientId
+                ClientId = clientId,
+                MPValue = MPValue
             };
         }
 

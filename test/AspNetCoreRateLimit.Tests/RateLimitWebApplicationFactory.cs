@@ -27,6 +27,12 @@ namespace AspNetCoreRateLimit.Tests
 
                 // seed IP data from appsettings
                 ipPolicyStore.SeedAsync().Wait();
+
+                // get the IMPPolicyStore instance
+                var MPPolicyStore = scope.ServiceProvider.GetRequiredService<IMPPolicyStore>();
+
+                // seed MP data from appsettings
+                MPPolicyStore.SeedAsync().Wait();
             }
 
             return server;
