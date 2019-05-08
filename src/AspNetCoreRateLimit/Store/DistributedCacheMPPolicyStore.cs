@@ -20,7 +20,7 @@ namespace AspNetCoreRateLimit
 
         public async Task SeedAsync()
         {
-            // on startup, save the IP rules defined in appsettings
+            // on startup, save the MP rules defined in appsettings
             if (_options != null && _policies?.MPRules != null)
             {
                 foreach (var rule in _policies.MPRules)

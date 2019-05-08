@@ -11,6 +11,7 @@ namespace AspNetCoreRateLimit
 
         public long TotalRequests { get; set; }
 
+        //MP total request count
         public long TotalMPRequests { get; set; }
     }
 }

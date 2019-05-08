@@ -64,7 +64,7 @@ namespace AspNetCoreRateLimit
             {
                 var entry = await _counterStore.GetAsync(counterId, cancellationToken);
 
-                long totalRequests;
+                long totalRequests = 0;
                 long totalMPRequests = 0;
 
                 if (entry.HasValue)
@@ -73,13 +73,15 @@ namespace AspNetCoreRateLimit
                     if (entry.Value.Timestamp + rule.PeriodTimespan.Value >= DateTime.UtcNow)
                     {
                         // increment MP request count
-                        if (Convert.ToInt64(0) !=  requestIdentity.MPValue)
+                        if (Convert.ToInt64(0) != requestIdentity.MPValue)
                         {
                             totalMPRequests = entry.Value.TotalMPRequests + requestIdentity.MPValue;
                         }
-
-                        // increment request count
-                        totalRequests = entry.Value.TotalRequests + 1;
+                        else
+                        {
+                            // increment request count
+                            totalRequests = entry.Value.TotalRequests + 1;
+                        }
 
                         // deep copy
                         counter = new RateLimitCounter

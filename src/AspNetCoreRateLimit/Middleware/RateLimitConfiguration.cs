@@ -52,7 +52,6 @@ namespace AspNetCoreRateLimit
             IpResolvers.Add(new IpConnectionResolveContributor(HttpContextAccessor));
 
             //MP header resolvers
-
             if(!string.IsNullOrEmpty(MPRateLimitOptions?.MPRateHeader))
             {
                 MPResolvers.Add(new MPHeaderResolveContributor(HttpContextAccessor, MPRateLimitOptions.MPRateHeader));

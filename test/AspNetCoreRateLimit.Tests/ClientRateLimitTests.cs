@@ -93,8 +93,8 @@ namespace AspNetCoreRateLimit.Tests
                 var request = new HttpRequestMessage(HttpMethod.Post, apiPath);
                 request.Headers.Add("X-ClientId", clientId);
                 request.Headers.Add("X-Real-IP", ip);
-
-
+                request.Headers.Add("X-UIPATH-Metadata", "0");
+                
                 var response = await _client.SendAsync(request);
                 responseStatusCode = (int)response.StatusCode;
                 content = await response.Content.ReadAsStringAsync();

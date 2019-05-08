@@ -13,20 +13,20 @@ namespace AspNetCoreRateLimit.Demo.Controllers
             return new string[] { "value1", "value2" };
         }
 
-        // GET api/values/5
+        // GET api/mpvalues/5
         [HttpGet("{id}")]
         public string Get(int id)
         {
             return "value";
         }
 
-        // POST api/values
+        // POST api/mpvalues
         [HttpPost]
         public void Post([FromBody]string value)
         {
         }
 
-        // PUT api/values/5
+        // PUT api/mpvalues/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody]string value)
         {

@@ -31,6 +31,7 @@ namespace AspNetCoreRateLimit.Demo.Controllers
             var id = $"{_options.MPRatePolicyPrefix}_cl-key-1";
             var policy = await _mpPolicyStore.GetAsync(id, HttpContext.RequestAborted);
 
+            //Add new policy in policy store  
             policy.Rules.Add(new RateLimitRule
             {
                 Endpoint = "*/api/testpolicyupdate",

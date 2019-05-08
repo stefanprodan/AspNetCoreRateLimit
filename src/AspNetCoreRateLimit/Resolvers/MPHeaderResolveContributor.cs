@@ -15,6 +15,8 @@ namespace AspNetCoreRateLimit
             _httpContextAccessor = httpContextAccessor;
             _headerName = headerName;
         }
+
+        //Resolve the header and return its value
         public long ResolveMP()
         {
             long MPValue = 0;

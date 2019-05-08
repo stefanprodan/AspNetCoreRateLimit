@@ -27,7 +27,7 @@ namespace AspNetCoreRateLimit.Tests
 
         [Theory]
         [InlineData("20")]
-        public async Task SpecificIpRule(string val)
+        public async Task SpecificMPRule(string val)
         {
             // Arrange
             int responseStatusCode = 0;

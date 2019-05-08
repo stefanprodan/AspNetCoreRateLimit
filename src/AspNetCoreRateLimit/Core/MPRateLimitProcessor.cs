@@ -21,14 +21,13 @@ namespace AspNetCoreRateLimit
        : base(options, counterStore, new MPRateCounterKeyBuilder(options), config)
         {
             _options = options;
-            _policyStore = policyStore;
-      
+            _policyStore = policyStore;  
         }
 
+        //get matching rule for MP rate limit
         public async Task<IEnumerable<RateLimitRule>> GetMatchingRulesAsync(ClientRequestIdentity identity, CancellationToken cancellationToken = default)
         {
             var policy = await _policyStore.GetAsync($"{_options.MPRatePolicyPrefix}_{identity.ClientId}", cancellationToken);
-
             return GetMatchingRules(identity, policy?.Rules);
         }
 

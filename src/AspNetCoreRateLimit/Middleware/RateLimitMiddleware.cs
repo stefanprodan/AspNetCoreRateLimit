@@ -62,6 +62,7 @@ namespace AspNetCoreRateLimit
                         continue;
                     }
 
+
                     // check if any of the ip/client/MP rate limit is reached
                     if (counter.TotalRequests > rule.Limit || counter.TotalMPRequests > rule.Limit)
                     {
@@ -138,6 +139,7 @@ namespace AspNetCoreRateLimit
                 }
             }
 
+            //check if MP header is set if true then get it's value
             if(_config.MPResolvers?.Any() == true)
             {
                 foreach(var resolver in _config.MPResolvers)
@@ -156,7 +158,7 @@ namespace AspNetCoreRateLimit
                 Path = httpContext.Request.Path.ToString().ToLowerInvariant(),
                 HttpVerb = httpContext.Request.Method.ToLowerInvariant(),
                 ClientId = clientId,
-                MPValue = MPValue
+                MPValue = MPValue   //MP value from the request
             };
         }
 
