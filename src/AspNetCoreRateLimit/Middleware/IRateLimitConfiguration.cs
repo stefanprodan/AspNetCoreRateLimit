@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace AspNetCoreRateLimit
 {
@@ -9,5 +10,7 @@ namespace AspNetCoreRateLimit
         IList<IIpResolveContributor> IpResolvers { get; }
 
         ICounterKeyBuilder EndpointCounterKeyBuilder { get; }
+
+        Func<long> RateIncrementer { get; }
     }
 }

@@ -53,7 +53,7 @@ namespace AspNetCoreRateLimit
             var counter = new RateLimitCounter
             {
                 Timestamp = DateTime.UtcNow,
-                TotalRequests = 1
+                Count = 1
             };
 
             var counterId = BuildCounterKey(requestIdentity, rule);
@@ -69,13 +69,13 @@ namespace AspNetCoreRateLimit
                     if (entry.Value.Timestamp + rule.PeriodTimespan.Value >= DateTime.UtcNow)
                     {
                         // increment request count
-                        var totalRequests = entry.Value.TotalRequests + 1;
+                        var totalCount = entry.Value.Count + _config.RateIncrementer?.Invoke() ?? 1;
 
                         // deep copy
                         counter = new RateLimitCounter
                         {
                             Timestamp = entry.Value.Timestamp,
-                            TotalRequests = totalRequests
+                            Count = totalCount
                         };
                     }
                 }
@@ -97,7 +97,7 @@ namespace AspNetCoreRateLimit
             if (counter.HasValue)
             {
                 reset = counter.Value.Timestamp + (rule.PeriodTimespan ?? rule.Period.ToTimeSpan());
-                remaining = rule.Limit - counter.Value.TotalRequests;
+                remaining = rule.Limit - counter.Value.Count;
             }
             else
             {

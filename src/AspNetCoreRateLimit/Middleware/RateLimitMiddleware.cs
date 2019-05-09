@@ -52,24 +52,24 @@ namespace AspNetCoreRateLimit
             foreach (var rule in rules)
             {
                 // increment counter		
-                var counter = await _processor.ProcessRequestAsync(identity, rule, context.RequestAborted);
+                var rateLimitCounter = await _processor.ProcessRequestAsync(identity, rule, context.RequestAborted);
 
                 if (rule.Limit > 0)
                 {
                     // check if key expired
-                    if (counter.Timestamp + rule.PeriodTimespan.Value < DateTime.UtcNow)
+                    if (rateLimitCounter.Timestamp + rule.PeriodTimespan.Value < DateTime.UtcNow)
                     {
                         continue;
                     }
 
                     // check if limit is reached
-                    if (counter.TotalRequests > rule.Limit)
+                    if (rateLimitCounter.Count > rule.Limit)
                     {
                         //compute retry after value
-                        var retryAfter = counter.Timestamp.RetryAfterFrom(rule);
+                        var retryAfter = rateLimitCounter.Timestamp.RetryAfterFrom(rule);
 
                         // log blocked request
-                        LogBlockedRequest(context, identity, counter, rule);
+                        LogBlockedRequest(context, identity, rateLimitCounter, rule);
 
                         // break execution
                         await ReturnQuotaExceededResponse(context, rule, retryAfter);
@@ -81,7 +81,7 @@ namespace AspNetCoreRateLimit
                 else
                 {
                     // log blocked request
-                    LogBlockedRequest(context, identity, counter, rule);
+                    LogBlockedRequest(context, identity, rateLimitCounter, rule);
 
                     // break execution (Int32 max used to represent infinity)
                     await ReturnQuotaExceededResponse(context, rule, int.MaxValue.ToString(System.Globalization.CultureInfo.InvariantCulture));
@@ -89,7 +89,7 @@ namespace AspNetCoreRateLimit
                     return;
                 }
 
-                rulesDict.Add(rule, counter);
+                rulesDict.Add(rule, rateLimitCounter);
             }
 
             // set X-Rate-Limit headers for the longest period

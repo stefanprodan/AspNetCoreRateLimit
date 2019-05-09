@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 
 namespace AspNetCoreRateLimit
@@ -10,6 +11,8 @@ namespace AspNetCoreRateLimit
         public IList<IIpResolveContributor> IpResolvers { get; } = new List<IIpResolveContributor>();
 
         public virtual ICounterKeyBuilder EndpointCounterKeyBuilder { get; } = new PathCounterKeyBuilder();
+
+        public Func<long> RateIncrementer { get; } = null;
 
         public RateLimitConfiguration(
             IHttpContextAccessor httpContextAccessor,

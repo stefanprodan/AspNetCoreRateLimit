@@ -9,6 +9,6 @@ namespace AspNetCoreRateLimit
     {
         public DateTime Timestamp { get; set; }
 
-        public long TotalRequests { get; set; }
+        public long Count { get; set; }
     }
 }
