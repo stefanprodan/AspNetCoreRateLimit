@@ -18,7 +18,7 @@
 	<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0-preview-19075-0444" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.0.0-preview-19075-0444" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.0.0-preview-19075-0444" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.0-preview-20190203-03" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
       <PrivateAssets>all</PrivateAssets>
