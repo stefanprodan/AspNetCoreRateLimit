@@ -41,7 +41,11 @@ namespace AspNetCoreRateLimit.Demo
             var opt = new ClientRateLimitOptions();
             Configuration.GetSection("ClientRateLimiting").Bind(opt);
 
-            services.AddMvc().AddNewtonsoftJson();
+            services.AddMvc((options) => 
+            {
+                options.EnableEndpointRouting = false;
+
+            }).AddNewtonsoftJson();
 
             // https://github.com/aspnet/Hosting/issues/793
             // the IHttpContextAccessor service is not registered by default.
