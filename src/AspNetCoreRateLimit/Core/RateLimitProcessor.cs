@@ -61,7 +61,7 @@ namespace AspNetCoreRateLimit
             // serial reads and writes on same key
             using (await AsyncLock.WriterLockAsync(counterId).ConfigureAwait(false))
             {
-                var entry = await _counterStore.GetAsync(conuterId, cancellationToken);
+                var entry = await _counterStore.GetAsync(counterId, cancellationToken);
 
                 if (entry.HasValue)
                 {
