@@ -57,11 +57,11 @@ namespace AspNetCoreRateLimit
             };
 
             var counterId = BuildCounterKey(requestIdentity, rule);
-
+            var accountId = requestIdentity.accountId;
             // serial reads and writes on same key
-            using (await AsyncLock.WriterLockAsync(counterId).ConfigureAwait(false))
+            using (await AsyncLock.WriterLockAsync(accountId).ConfigureAwait(false))
             {
-                var entry = await _counterStore.GetAsync(counterId, cancellationToken);
+                var entry = await _counterStore.GetAsync(accountId, cancellationToken);
 
                 if (entry.HasValue)
                 {
@@ -81,7 +81,7 @@ namespace AspNetCoreRateLimit
                 }
 
                 // stores: id (string) - timestamp (datetime) - total_requests (long)
-                await _counterStore.SetAsync(counterId, counter, rule.PeriodTimespan.Value, cancellationToken);
+                await _counterStore.SetAsync(accountId, counter, rule.PeriodTimespan.Value, cancellationToken);
             }
 
             return counter;
@@ -91,7 +91,7 @@ namespace AspNetCoreRateLimit
         {
             var headers = new RateLimitHeaders();
 
-            long remaining;
+            double remaining;
             DateTime reset;
 
             if (counter.HasValue)

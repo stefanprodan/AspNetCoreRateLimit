@@ -12,7 +12,7 @@ namespace AspNetCoreRateLimit
 
         public virtual ICounterKeyBuilder EndpointCounterKeyBuilder { get; } = new PathCounterKeyBuilder();
 
-        public virtual Func<long> RateIncrementer { get; } = () => 1;
+        public virtual Func<double> RateIncrementer { get; } = () => 1;
 
         public RateLimitConfiguration(
             IHttpContextAccessor httpContextAccessor,
