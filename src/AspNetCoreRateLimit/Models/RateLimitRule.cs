@@ -24,6 +24,6 @@ namespace AspNetCoreRateLimit
         /// <summary>
         /// Maximum number of requests that a client can make in a defined period
         /// </summary>
-        public long Limit { get; set; }
+        public double Limit { get; set; }
     }
 }

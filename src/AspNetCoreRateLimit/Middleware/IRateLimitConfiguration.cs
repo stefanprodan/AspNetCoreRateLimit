@@ -11,6 +11,6 @@ namespace AspNetCoreRateLimit
 
         ICounterKeyBuilder EndpointCounterKeyBuilder { get; }
 
-        Func<long> RateIncrementer { get; }
+        Func<double> RateIncrementer { get; }
     }
 }

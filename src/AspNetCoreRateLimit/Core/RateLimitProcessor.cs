@@ -91,7 +91,7 @@ namespace AspNetCoreRateLimit
         {
             var headers = new RateLimitHeaders();
 
-            long remaining;
+            double remaining;
             DateTime reset;
 
             if (counter.HasValue)
