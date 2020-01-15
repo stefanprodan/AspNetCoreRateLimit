@@ -199,8 +199,11 @@ namespace AspNetCoreRateLimit
 
             foreach (var item in limits)
             {
-                // parse period text into time spans
-                item.PeriodTimespan = item.Period.ToTimeSpan();
+                if (!item.PeriodTimespan.HasValue)
+                {
+                    // parse period text into time spans	
+                    item.PeriodTimespan = item.Period.ToTimeSpan();
+                }
             }
 
             limits = limits.OrderBy(l => l.PeriodTimespan).ToList();
