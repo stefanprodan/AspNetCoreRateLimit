@@ -47,7 +47,7 @@ namespace AspNetCoreRateLimit
 
             var rules = await _processor.GetMatchingRulesAsync(identity, context.RequestAborted);
 
-            var rulesDict = new Dictionary<RateLimitRule, RateLimitCounter>();
+                  var rulesDict = new System.Collections.Concurrent.ConcurrentDictionary<RateLimitRule, RateLimitCounter>();
 
             foreach (var rule in rules)
             {
@@ -89,7 +89,7 @@ namespace AspNetCoreRateLimit
                     return;
                 }
 
-                rulesDict.Add(rule, rateLimitCounter);
+               rulesDict.TryAdd(rule, rateLimitCounter);
             }
 
             // set X-Rate-Limit headers for the longest period
