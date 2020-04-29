@@ -1,17 +1,18 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
 
 namespace AspNetCoreRateLimit
 {
-    public class MemoryCacheIpPolicyStore : IIpPolicyStore
+    public class MemoryCacheIpPolicyStore : MemoryCacheRateLimitStore<IpRateLimitPolicies>, IIpPolicyStore
     {
-        private readonly IMemoryCache _memoryCache;
+        private readonly IpRateLimitOptions _options;
+        private readonly IpRateLimitPolicies _policies;
 
-        public MemoryCacheIpPolicyStore(IMemoryCache memoryCache, 
-            IOptions<IpRateLimitOptions> options = null, 
-            IOptions<IpRateLimitPolicies> policies = null)
+        public MemoryCacheIpPolicyStore(
+            IMemoryCache cache,
+            IOptions<IpRateLimitOptions> options = null,
+            IOptions<IpRateLimitPolicies> policies = null) : base(cache)
         {
             _memoryCache = memoryCache;
 
@@ -43,31 +44,13 @@ namespace AspNetCoreRateLimit
             }
         }
 
-        public void Set(string id, IpRateLimitPolicies policy)
+        public async Task SeedAsync()
         {
-            _memoryCache.Set(id, policy);
-        }
-
-        public bool Exists(string id)
-        {
-            IpRateLimitPolicies stored;
-            return _memoryCache.TryGetValue(id, out stored);
-        }
-
-        public IpRateLimitPolicies Get(string id)
-        {
-            IpRateLimitPolicies stored;
-            if (_memoryCache.TryGetValue(id, out stored))
+            // on startup, save the IP rules defined in appsettings
+            if (_options != null && _policies != null)
             {
-                return stored;
+                await SetAsync($"{_options.IpPolicyPrefix}", _policies).ConfigureAwait(false);
             }
-
-            return null;
-        }
-
-        public void Remove(string id)
-        {
-            _memoryCache.Remove(id);
         }
     }
 }

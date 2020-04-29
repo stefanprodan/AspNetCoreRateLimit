@@ -1,10 +1,9 @@
-﻿namespace AspNetCoreRateLimit
+﻿using System.Threading.Tasks;
+
+namespace AspNetCoreRateLimit
 {
-    public interface IIpPolicyStore
+    public interface IIpPolicyStore : IRateLimitStore<IpRateLimitPolicies>
     {
-        bool Exists(string id);
-        IpRateLimitPolicies Get(string id);
-        void Remove(string id);
-        void Set(string id, IpRateLimitPolicies policy);
+        Task SeedAsync();
     }
 }

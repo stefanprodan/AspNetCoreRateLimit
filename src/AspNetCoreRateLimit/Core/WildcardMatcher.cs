@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AspNetCoreRateLimit.Core
+﻿namespace AspNetCoreRateLimit
 {
     public static class WildcardMatcher
     {
@@ -43,7 +39,6 @@ namespace AspNetCoreRateLimit.Core
             // Repeat matching until either string is matched against the pattern or no more parts remain on stack to test
             while (stackPos >= 0 && !matched)
             {
-
                 inputPos = inputPosStack[stackPos];         // Pop input and pattern positions from stack
                 patternPos = patternPosStack[stackPos--];   // Matching will succeed if rest of the input string matches rest of the pattern
 
@@ -79,16 +74,11 @@ namespace AspNetCoreRateLimit.Core
                             inputPosStack[++stackPos] = curInputPos;
                             patternPosStack[stackPos] = curPatternPos;
                         }
-
                     }
                 }
-
             }
 
             return matched;
-
         }
-
-        
     }
 }

@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace AspNetCoreRateLimit.Demo.Controllers
 {
@@ -21,17 +18,17 @@ namespace AspNetCoreRateLimit.Demo.Controllers
         }
 
         [HttpGet]
-        public IpRateLimitPolicies Get()
+        public async Task<IpRateLimitPolicies> Get()
         {
-            return _ipPolicyStore.Get(_options.IpPolicyPrefix);
+            return await _ipPolicyStore.GetAsync(_options.IpPolicyPrefix, HttpContext.RequestAborted);
         }
 
         [HttpPost]
-        public void Post()
+        public async Task Post()
         {
-            var pol = _ipPolicyStore.Get(_options.IpPolicyPrefix);
+            var policy = await _ipPolicyStore.GetAsync(_options.IpPolicyPrefix, HttpContext.RequestAborted);
 
-            pol.IpRules.Add(new IpRateLimitPolicy
+            policy.IpRules.Add(new IpRateLimitPolicy
             {
                 Ip = "8.8.4.4",
                 Rules = new List<RateLimitRule>(new RateLimitRule[] {
@@ -42,7 +39,7 @@ namespace AspNetCoreRateLimit.Demo.Controllers
                 })
             });
 
-            _ipPolicyStore.Set(_options.IpPolicyPrefix, pol);
+            await _ipPolicyStore.SetAsync(_options.IpPolicyPrefix, policy, cancellationToken: HttpContext.RequestAborted);
         }
     }
 }

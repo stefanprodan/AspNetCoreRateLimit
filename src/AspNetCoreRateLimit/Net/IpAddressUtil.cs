@@ -12,6 +12,7 @@ namespace AspNetCoreRateLimit
             var ip = ParseIp(clientIp);
 
             var range = new IpAddressRange(rule);
+
             if (range.Contains(ip))
             {
                 return true;
@@ -23,11 +24,13 @@ namespace AspNetCoreRateLimit
         public static bool ContainsIp(List<string> ipRules, string clientIp)
         {
             var ip = ParseIp(clientIp);
+
             if (ipRules != null && ipRules.Any())
             {
                 foreach (var rule in ipRules)
                 {
                     var range = new IpAddressRange(rule);
+
                     if (range.Contains(ip))
                     {
                         return true;
@@ -42,11 +45,13 @@ namespace AspNetCoreRateLimit
         {
             rule = null;
             var ip = ParseIp(clientIp);
+
             if (ipRules != null && ipRules.Any())
             {
                 foreach (var r in ipRules)
                 {
                     var range = new IpAddressRange(r);
+
                     if (range.Contains(ip))
                     {
                         rule = r;
@@ -62,9 +67,11 @@ namespace AspNetCoreRateLimit
         {
             //remove port number from ip address if any
             ipAddress = ipAddress.Split(',').First().Trim();
-            int portDelimiterPos = ipAddress.LastIndexOf(":", StringComparison.CurrentCultureIgnoreCase);
-            bool ipv6WithPortStart = ipAddress.StartsWith("[");
-            int ipv6End = ipAddress.IndexOf("]");
+
+            var portDelimiterPos = ipAddress.LastIndexOf(":", StringComparison.CurrentCultureIgnoreCase);
+            var ipv6WithPortStart = ipAddress.StartsWith("[");
+            var ipv6End = ipAddress.IndexOf("]");
+
             if (portDelimiterPos != -1
                 && portDelimiterPos == ipAddress.IndexOf(":", StringComparison.CurrentCultureIgnoreCase)
                 || ipv6WithPortStart && ipv6End != -1 && ipv6End < portDelimiterPos)

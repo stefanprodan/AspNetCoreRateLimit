@@ -2,7 +2,7 @@
 
 namespace AspNetCoreRateLimit
 {
-    public class IpRateLimitOptions : RateLimitCoreOptions
+    public class IpRateLimitOptions : RateLimitOptions
     {
         /// <summary>
         /// Gets or sets the HTTP header of the real ip header injected by reverse proxy, by default is X-Real-IP

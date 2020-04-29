@@ -2,7 +2,7 @@
 
 namespace AspNetCoreRateLimit
 {
-    public class RateLimitCoreOptions
+    public class RateLimitOptions
     {
         public List<RateLimitRule> GeneralRules { get; set; }
 
@@ -21,6 +21,11 @@ namespace AspNetCoreRateLimit
         /// API calls quota exceeded! maximum admitted {0} per {1}
         /// </summary>
         public string QuotaExceededMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a model that represents the QuotaExceeded response (content-type, content, status code).
+        /// </summary>
+        public QuotaExceededResponse QuotaExceededResponse { get; set; }
 
         /// <summary>
         /// Gets or sets the counter prefix, used to compose the rate limit counter cache key
