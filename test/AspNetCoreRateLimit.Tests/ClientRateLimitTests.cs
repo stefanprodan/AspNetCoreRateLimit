@@ -1,61 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc.Testing;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
 using AspNetCoreRateLimit.Tests.Enums;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Memory;
 using Xunit;
 
 namespace AspNetCoreRateLimit.Tests
 {
-    public class ClientRateLimitTests : IClassFixture<RateLimitWebApplicationFactory>
+    public class ClientRateLimitTests : BaseClassFixture
     {
         private const string apiPath = "/api/clients";
         private const string apiRateLimitPath = "/api/clientratelimit";
         private const string ip = "::1";
 
-        private readonly HttpClient _wildcardClient;
-        private readonly HttpClient _regexClient;
-
-        public ClientRateLimitTests(RateLimitWebApplicationFactory factory)
+        public ClientRateLimitTests(RateLimitWebApplicationFactory factory) : base(factory)
         {
-            _wildcardClient = factory.CreateClient(options: new WebApplicationFactoryClientOptions
-            {
-                BaseAddress = new System.Uri("https://localhost:44304")
-            });
-
-
-            _regexClient = CreateRegexClient(factory);
-        }
-
-        private HttpClient CreateRegexClient(RateLimitWebApplicationFactory factory)
-        {
-            return factory.WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureAppConfiguration((context, conf) =>
-                {
-                    conf.AddJsonFile("appsettings.Regex.json");
-                });
-            }).CreateClient(options: new WebApplicationFactoryClientOptions
-            {
-                BaseAddress = new System.Uri("https://localhost:44304")
-            });
-        }
-
-        private HttpClient GetClient(ClientType clientType)
-        {
-            switch (clientType)
-            {
-                case ClientType.Wildcard:
-                    return _wildcardClient;
-                case ClientType.Regex:
-                    return _regexClient;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(clientType), clientType, "Unexpected client type.");
-            }
         }
 
         [Theory]
