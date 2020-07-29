@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
+﻿using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Memory;
 using Xunit;
 
 namespace AspNetCoreRateLimit.Tests
@@ -11,6 +14,7 @@ namespace AspNetCoreRateLimit.Tests
         private const string apiRateLimitPath = "/api/ipratelimit";
 
         private readonly HttpClient _client;
+        private readonly HttpClient _regexClient;
 
         public IpRateLimitTests(RateLimitWebApplicationFactory factory)
         {
@@ -18,6 +22,7 @@ namespace AspNetCoreRateLimit.Tests
             {
                 BaseAddress = new System.Uri("https://localhost:44304")
             });
+
         }
 
         [Theory]

@@ -1,12 +1,27 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace AspNetCoreRateLimit
 {
     public static class Extensions
     {
-        public static bool IsWildcardMatch(this string source, string value)
+        public static bool IsUrlMatch(this string source, string value, bool useRegex)
+        {
+            if (useRegex)
+            {
+                return IsRegexMatch(source, value);
+            }
+            return source.IsWildCardMatch(value);
+        }
+
+        public static bool IsWildCardMatch(this string source, string value)
         {
             return source != null && value != null && source.ToLowerInvariant().IsMatch(value.ToLowerInvariant());
+        }
+
+        public static bool IsRegexMatch(this string source, string value)
+        {
+            return source != null && value != null && Regex.IsMatch(source, value, RegexOptions.IgnoreCase);
         }
 
         public static string RetryAfterFrom(this DateTime timestamp, RateLimitRule rule)
