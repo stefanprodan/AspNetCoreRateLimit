@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AspNetCoreRateLimit.Tests.Enums;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Memory;
 using Xunit;
 
@@ -34,32 +37,7 @@ namespace AspNetCoreRateLimit.Tests
             {
                 builder.ConfigureAppConfiguration((context, conf) =>
                 {
-                    conf.Add(new MemoryConfigurationSource
-                    {
-                        InitialData = new List<KeyValuePair<string, string>>()
-                        {
-                            new KeyValuePair<string, string>("ClientRateLimiting:EnableRegexRuleMatching", "true"),
-                            new KeyValuePair<string, string>("ClientRateLimiting:EndpointWhitelist:0", "[a-zA-Z]+:/api/values"),
-
-                            new KeyValuePair<string, string>("ClientRateLimiting:GeneralRules:0:Endpoint", ".+"),
-                            new KeyValuePair<string, string>("ClientRateLimiting:GeneralRules:0:Period", "1s"),
-                            new KeyValuePair<string, string>("ClientRateLimiting:GeneralRules:0:Limit", "2"),
-                            new KeyValuePair<string, string>("ClientRateLimiting:GeneralRules:1:Endpoint", ".+"),
-                            new KeyValuePair<string, string>("ClientRateLimiting:GeneralRules:1:Period", "1m"),
-                            new KeyValuePair<string, string>("ClientRateLimiting:GeneralRules:1:Limit", "5"),
-                            new KeyValuePair<string, string>("ClientRateLimiting:GeneralRules:2:Endpoint", "post:/api/cli[a-z]+"),
-                            new KeyValuePair<string, string>("ClientRateLimiting:GeneralRules:2:Period", "5m"),
-                            new KeyValuePair<string, string>("ClientRateLimiting:GeneralRules:2:Limit", "3"),
-
-                            new KeyValuePair<string, string>("ClientRateLimitPolicies:ClientRules:0:Rules:0:Endpoint", ".+"),
-                            new KeyValuePair<string, string>("ClientRateLimitPolicies:ClientRules:0:Rules:0:Period", "1s"),
-                            new KeyValuePair<string, string>("ClientRateLimitPolicies:ClientRules:0:Rules:0:Limit", "10"),
-
-                            new KeyValuePair<string, string>("ClientRateLimitPolicies:ClientRules:1:Rules:0:Endpoint", ".+"),
-                            new KeyValuePair<string, string>("ClientRateLimitPolicies:ClientRules:1:Rules:0:Period", "1s"),
-                            new KeyValuePair<string, string>("ClientRateLimitPolicies:ClientRules:1:Rules:0:Limit", "10"),
-                        }
-                    });
+                    conf.AddJsonFile("appsettings.Regex.json");
                 });
             }).CreateClient(options: new WebApplicationFactoryClientOptions
             {

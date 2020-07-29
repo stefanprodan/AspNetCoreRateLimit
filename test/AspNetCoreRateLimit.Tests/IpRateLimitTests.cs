@@ -22,8 +22,8 @@ namespace AspNetCoreRateLimit.Tests
             {
                 BaseAddress = new System.Uri("https://localhost:44304")
             });
-
         }
+
 
         [Theory]
         [InlineData("84.247.85.224")]
