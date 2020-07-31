@@ -46,5 +46,10 @@ namespace AspNetCoreRateLimit
         /// Disables X-Rate-Limit and Rety-After headers
         /// </summary>
         public bool DisableRateLimitHeaders { get; set; }
+
+        /// <summary>
+        /// Enabled the comparison logic to use Regex instead of wildcards.
+        /// </summary>
+        public bool EnableRegexRuleMatching { get; set; }
     }
 }
