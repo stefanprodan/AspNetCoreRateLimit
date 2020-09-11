@@ -71,7 +71,7 @@ namespace AspNetCoreRateLimit
                         // log blocked request
                         LogBlockedRequest(context, identity, rateLimitCounter, rule);
 
-                        _options.RequestBlockedBehavior(context, identity, rateLimitCounter, rule);
+                        await _options.RequestBlockedBehavior(context, identity, rateLimitCounter, rule);
 
                         // break execution
                         await ReturnQuotaExceededResponse(context, rule, retryAfter);
@@ -85,7 +85,7 @@ namespace AspNetCoreRateLimit
                     // log blocked request
                     LogBlockedRequest(context, identity, rateLimitCounter, rule);
 
-                    _options.RequestBlockedBehavior(context, identity, rateLimitCounter, rule);
+                    await _options.RequestBlockedBehavior(context, identity, rateLimitCounter, rule);
 
                     // break execution (Int32 max used to represent infinity)
                     await ReturnQuotaExceededResponse(context, rule, int.MaxValue.ToString(System.Globalization.CultureInfo.InvariantCulture));

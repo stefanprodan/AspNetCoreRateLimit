@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace AspNetCoreRateLimit
@@ -57,6 +58,6 @@ namespace AspNetCoreRateLimit
         /// <summary>
         /// Gets or sets behavior after the request is blocked
         /// </summary>
-        public Action<HttpContext, ClientRequestIdentity, RateLimitCounter, RateLimitRule> RequestBlockedBehavior { get; set; }
+        public Func<HttpContext, ClientRequestIdentity, RateLimitCounter, RateLimitRule, Task> RequestBlockedBehavior { get; set; }
     }
 }
