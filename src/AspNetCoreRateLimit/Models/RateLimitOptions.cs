@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace AspNetCoreRateLimit
 {
@@ -9,7 +12,7 @@ namespace AspNetCoreRateLimit
         public List<string> EndpointWhitelist { get; set; }
 
         public List<string> ClientWhitelist { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the HTTP Status code returned when rate limiting occurs, by default value is set to 429 (Too Many Requests)
         /// </summary>
@@ -51,5 +54,10 @@ namespace AspNetCoreRateLimit
         /// Enabled the comparison logic to use Regex instead of wildcards.
         /// </summary>
         public bool EnableRegexRuleMatching { get; set; }
+
+        /// <summary>
+        /// Gets or sets behavior after the request is blocked
+        /// </summary>
+        public Func<HttpContext, ClientRequestIdentity, RateLimitCounter, RateLimitRule, Task> RequestBlockedBehavior { get; set; }
     }
 }

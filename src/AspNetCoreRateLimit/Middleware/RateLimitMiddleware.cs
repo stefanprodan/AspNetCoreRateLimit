@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace AspNetCoreRateLimit
 {
@@ -71,6 +71,11 @@ namespace AspNetCoreRateLimit
                         // log blocked request
                         LogBlockedRequest(context, identity, rateLimitCounter, rule);
 
+                        if (_options.RequestBlockedBehavior != null)
+                        {
+                            await _options.RequestBlockedBehavior(context, identity, rateLimitCounter, rule);
+                        }
+
                         // break execution
                         await ReturnQuotaExceededResponse(context, rule, retryAfter);
 
@@ -82,6 +87,11 @@ namespace AspNetCoreRateLimit
                 {
                     // log blocked request
                     LogBlockedRequest(context, identity, rateLimitCounter, rule);
+
+                    if (_options.RequestBlockedBehavior != null)
+                    {
+                        await _options.RequestBlockedBehavior(context, identity, rateLimitCounter, rule);
+                    }
 
                     // break execution (Int32 max used to represent infinity)
                     await ReturnQuotaExceededResponse(context, rule, int.MaxValue.ToString(System.Globalization.CultureInfo.InvariantCulture));
@@ -113,7 +123,7 @@ namespace AspNetCoreRateLimit
 
             if (_config.ClientResolvers?.Any() == true)
             {
-                foreach(var resolver in _config.ClientResolvers)
+                foreach (var resolver in _config.ClientResolvers)
                 {
                     clientId = resolver.ResolveClient();
 

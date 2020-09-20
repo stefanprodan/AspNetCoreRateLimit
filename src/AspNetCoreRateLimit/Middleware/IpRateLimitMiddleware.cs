@@ -8,7 +8,7 @@ namespace AspNetCoreRateLimit
     {
         private readonly ILogger<IpRateLimitMiddleware> _logger;
 
-        public IpRateLimitMiddleware(RequestDelegate next, 
+        public IpRateLimitMiddleware(RequestDelegate next,
             IOptions<IpRateLimitOptions> options,
             IRateLimitCounterStore counterStore,
             IIpPolicyStore policyStore,
@@ -22,7 +22,7 @@ namespace AspNetCoreRateLimit
 
         protected override void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule)
         {
-            _logger.LogInformation($"Request {identity.HttpVerb}:{identity.Path} from IP {identity.ClientIp} has been blocked, quota {rule.Limit}/{rule.Period} exceeded by {counter.Count}. Blocked by rule {rule.Endpoint}, TraceIdentifier {httpContext.TraceIdentifier}.");
+            _logger.LogInformation("Request {HttpVerb}:{Path} from IP {ClientIp} has been blocked, quota {Limit}/{Period} exceeded by {Count}. Blocked by rule {Endpoint}, TraceIdentifier {TraceIdentifier}.", identity.HttpVerb, identity.Path, identity.ClientIp, rule.Limit, rule.Period, counter.Count, rule.Endpoint, httpContext.TraceIdentifier);
         }
     }
 }
