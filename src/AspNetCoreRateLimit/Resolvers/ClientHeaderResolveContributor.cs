@@ -17,7 +17,7 @@ namespace AspNetCoreRateLimit
         }
         public string ResolveClient()
         {
-            var clientId = "anon";
+            string clientId = null;
             var httpContext = _httpContextAccessor.HttpContext;
 
             if (httpContext.Request.Headers.TryGetValue(_headerName, out var values))

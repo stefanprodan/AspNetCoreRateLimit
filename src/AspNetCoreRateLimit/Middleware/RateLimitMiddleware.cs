@@ -51,7 +51,7 @@ namespace AspNetCoreRateLimit
 
             foreach (var rule in rules)
             {
-                // increment counter		
+                // increment counter
                 var rateLimitCounter = await _processor.ProcessRequestAsync(identity, rule, context.RequestAborted);
 
                 if (rule.Limit > 0)
@@ -152,7 +152,7 @@ namespace AspNetCoreRateLimit
                 ClientIp = clientIp,
                 Path = httpContext.Request.Path.ToString().ToLowerInvariant(),
                 HttpVerb = httpContext.Request.Method.ToLowerInvariant(),
-                ClientId = clientId
+                ClientId = clientId ?? "anon"
             };
         }
 
