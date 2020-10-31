@@ -23,10 +23,10 @@ namespace AspNetCoreRateLimit
 
         public static bool ContainsIp(List<string> ipRules, string clientIp)
         {
-            var ip = ParseIp(clientIp);
-
-            if (ipRules != null && ipRules.Any())
+            if (ipRules?.Any() == true)
             {
+                var ip = ParseIp(clientIp);
+
                 foreach (var rule in ipRules)
                 {
                     var range = new IpAddressRange(rule);
@@ -44,10 +44,11 @@ namespace AspNetCoreRateLimit
         public static bool ContainsIp(List<string> ipRules, string clientIp, out string rule)
         {
             rule = null;
-            var ip = ParseIp(clientIp);
 
-            if (ipRules != null && ipRules.Any())
+            if (ipRules?.Any() == true)
             {
+                var ip = ParseIp(clientIp);
+
                 foreach (var r in ipRules)
                 {
                     var range = new IpAddressRange(r);

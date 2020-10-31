@@ -71,9 +71,9 @@ namespace AspNetCoreRateLimit
                         // log blocked request
                         LogBlockedRequest(context, identity, rateLimitCounter, rule);
 
-                        if (_options.RequestBlockedBehavior != null)
+                        if (_options.RequestBlockedBehaviorAsync != null)
                         {
-                            await _options.RequestBlockedBehavior(context, identity, rateLimitCounter, rule);
+                            await _options.RequestBlockedBehaviorAsync(context, identity, rateLimitCounter, rule);
                         }
 
                         // break execution
@@ -88,9 +88,9 @@ namespace AspNetCoreRateLimit
                     // log blocked request
                     LogBlockedRequest(context, identity, rateLimitCounter, rule);
 
-                    if (_options.RequestBlockedBehavior != null)
+                    if (_options.RequestBlockedBehaviorAsync != null)
                     {
-                        await _options.RequestBlockedBehavior(context, identity, rateLimitCounter, rule);
+                        await _options.RequestBlockedBehaviorAsync(context, identity, rateLimitCounter, rule);
                     }
 
                     // break execution (Int32 max used to represent infinity)

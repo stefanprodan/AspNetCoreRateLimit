@@ -58,6 +58,6 @@ namespace AspNetCoreRateLimit
         /// <summary>
         /// Gets or sets behavior after the request is blocked
         /// </summary>
-        public Func<HttpContext, ClientRequestIdentity, RateLimitCounter, RateLimitRule, Task> RequestBlockedBehavior { get; set; }
+        public Func<HttpContext, ClientRequestIdentity, RateLimitCounter, RateLimitRule, Task> RequestBlockedBehaviorAsync { get; set; }
     }
 }
