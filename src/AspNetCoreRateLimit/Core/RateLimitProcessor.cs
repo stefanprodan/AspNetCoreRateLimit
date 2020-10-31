@@ -38,12 +38,17 @@ namespace AspNetCoreRateLimit
                 return true;
             }
 
+            if (_options.IpWhitelist != null && IpParser.ContainsIp(_options.IpWhitelist, requestIdentity.ClientIp))
+            {
+                return true;
+            }
+
             if (_options.EndpointWhitelist != null && _options.EndpointWhitelist.Any())
             {
                 string path = _options.EnableRegexRuleMatching ? $".+:{requestIdentity.Path}" : $"*:{requestIdentity.Path}";
 
                 if (_options.EndpointWhitelist.Any(x => $"{requestIdentity.HttpVerb}:{requestIdentity.Path}".IsUrlMatch(x, _options.EnableRegexRuleMatching)) ||
-                    _options.EndpointWhitelist.Any(x => path.IsUrlMatch(x, _options.EnableRegexRuleMatching)))
+                        _options.EndpointWhitelist.Any(x => path.IsUrlMatch(x, _options.EnableRegexRuleMatching)))
                     return true;
             }
 

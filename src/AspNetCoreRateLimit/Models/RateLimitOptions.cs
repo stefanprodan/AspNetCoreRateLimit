@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 
 namespace AspNetCoreRateLimit
 {
@@ -12,6 +12,8 @@ namespace AspNetCoreRateLimit
         public List<string> EndpointWhitelist { get; set; }
 
         public List<string> ClientWhitelist { get; set; }
+
+        public List<string> IpWhitelist { get; set; }
 
         /// <summary>
         /// Gets or sets the HTTP Status code returned when rate limiting occurs, by default value is set to 429 (Too Many Requests)

@@ -40,15 +40,5 @@ namespace AspNetCoreRateLimit
 
             return GetMatchingRules(identity, rules);
         }
-
-        public override bool IsWhitelisted(ClientRequestIdentity requestIdentity)
-        {
-            if (_options.IpWhitelist != null && IpParser.ContainsIp(_options.IpWhitelist, requestIdentity.ClientIp))
-            {
-                return true;
-            }
-
-            return base.IsWhitelisted(requestIdentity);
-        }
     }
 }
