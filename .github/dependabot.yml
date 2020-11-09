@@ -8,5 +8,5 @@ updates:
   ignore:
       - dependency-name: "Microsoft.*"
         versions: ["2.x"]
-  default_assignees:
+  assignees:
       - "cristipufu"
