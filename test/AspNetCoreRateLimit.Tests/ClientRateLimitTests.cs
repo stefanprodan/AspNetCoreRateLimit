@@ -1,6 +1,6 @@
-﻿using System.Net.Http;
+﻿using AspNetCoreRateLimit.Tests.Enums;
+using System.Net.Http;
 using System.Threading.Tasks;
-using AspNetCoreRateLimit.Tests.Enums;
 using Xunit;
 
 namespace AspNetCoreRateLimit.Tests
