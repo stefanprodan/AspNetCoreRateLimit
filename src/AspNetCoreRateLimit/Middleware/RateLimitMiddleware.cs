@@ -24,6 +24,7 @@ namespace AspNetCoreRateLimit
             _options = options;
             _processor = processor;
             _config = config;
+            _config.RegisterResolvers();
         }
 
         public async Task Invoke(HttpContext context)
