@@ -1,7 +1,9 @@
-﻿namespace AspNetCoreRateLimit
+﻿using System.Threading.Tasks;
+
+namespace AspNetCoreRateLimit
 {
     public interface IClientResolveContributor
     {
-        string ResolveClient();
+        Task<string> ResolveClientAsync();
     }
 }
