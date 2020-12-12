@@ -4,16 +4,15 @@ namespace AspNetCoreRateLimit
 {
     public class IpConnectionResolveContributor : IIpResolveContributor
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public IpConnectionResolveContributor(IHttpContextAccessor httpContextAccessor)
+        public IpConnectionResolveContributor()
         {
-            _httpContextAccessor = httpContextAccessor;
+            // no op
         }
 
-        public string ResolveIp()
+        public string ResolveIp(HttpContext httpContext)
         {
-            return _httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString();
+            return httpContext.Connection.RemoteIpAddress?.ToString();
         }
     }
 }

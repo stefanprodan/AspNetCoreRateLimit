@@ -1,7 +1,9 @@
-﻿namespace AspNetCoreRateLimit
+﻿using Microsoft.AspNetCore.Http;
+
+namespace AspNetCoreRateLimit
 {
     public interface IIpResolveContributor
     {
-        string ResolveIp();
+        string ResolveIp(HttpContext httpContext);
     }
 }
