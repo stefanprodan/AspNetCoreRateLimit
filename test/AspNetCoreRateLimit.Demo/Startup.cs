@@ -44,10 +44,6 @@ namespace AspNetCoreRateLimit.Demo
 
             }).AddNewtonsoftJson();
 
-            // https://github.com/aspnet/Hosting/issues/793
-            // the IHttpContextAccessor service is not registered by default.
-            // the clientId/clientIp resolvers use it.
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             // configure the resolvers
             services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
