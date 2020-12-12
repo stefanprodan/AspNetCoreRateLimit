@@ -7,7 +7,7 @@ namespace AspNetCoreRateLimit
 
         public IpConnectionResolveContributor()
         {
-            // no op
+
         }
 
         public string ResolveIp(HttpContext httpContext)
