@@ -8,13 +8,13 @@
         public static bool IsMatch(this string value, string pattern, char singleWildcard = '?', char multipleWildcard = '*')
         {
 
-            int[] inputPosStack = new int[(value.Length + 1) * (pattern.Length + 1)];   // Stack containing input positions that should be tested for further matching
-            int[] patternPosStack = new int[inputPosStack.Length];                      // Stack containing pattern positions that should be tested for further matching
-            int stackPos = -1;                                                          // Points to last occupied entry in stack; -1 indicates that stack is empty
-            bool[,] pointTested = new bool[value.Length + 1, pattern.Length + 1];       // Each true value indicates that input position vs. pattern position has been tested
+            var inputPosStack = new int[(value.Length + 1) * (pattern.Length + 1)];   // Stack containing input positions that should be tested for further matching
+            var patternPosStack = new int[inputPosStack.Length];                      // Stack containing pattern positions that should be tested for further matching
+            var stackPos = -1;                                                          // Points to last occupied entry in stack; -1 indicates that stack is empty
+            var pointTested = new bool[value.Length + 1, pattern.Length + 1];       // Each true value indicates that input position vs. pattern position has been tested
 
-            int inputPos = 0;   // Position in input matched up to the first multiple wildcard in pattern
-            int patternPos = 0; // Position in pattern matched up to the first multiple wildcard in pattern
+            var inputPos = 0;   // Position in input matched up to the first multiple wildcard in pattern
+            var patternPos = 0; // Position in pattern matched up to the first multiple wildcard in pattern
 
             //if (pattern == null)
             //    pattern = string.Empty;
@@ -34,7 +34,7 @@
                 patternPosStack[stackPos] = patternPos;
             }
 
-            bool matched = false;
+            var matched = false;
 
             // Repeat matching until either string is matched against the pattern or no more parts remain on stack to test
             while (stackPos >= 0 && !matched)
@@ -51,11 +51,11 @@
                     // First character in next pattern block is guaranteed to be multiple wildcard
                     // So skip it and search for all matches in value string until next multiple wildcard character is reached in pattern
 
-                    for (int curInputStart = inputPos; curInputStart < value.Length; curInputStart++)
+                    for (var curInputStart = inputPos; curInputStart < value.Length; curInputStart++)
                     {
 
-                        int curInputPos = curInputStart;
-                        int curPatternPos = patternPos + 1;
+                        var curInputPos = curInputStart;
+                        var curPatternPos = patternPos + 1;
 
                         while (curInputPos < value.Length && curPatternPos < pattern.Length && pattern[curPatternPos] != multipleWildcard &&
                                (value[curInputPos] == pattern[curPatternPos] || pattern[curPatternPos] == singleWildcard))

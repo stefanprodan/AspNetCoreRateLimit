@@ -130,12 +130,10 @@ namespace AspNetCoreRateLimit
 
             var bytes = Encoding.UTF8.GetBytes(key);
 
-            using (var algorithm = new SHA1Managed())
-            {
-                var hash = algorithm.ComputeHash(bytes);
+            using var algorithm = new SHA1Managed();
+            var hash = algorithm.ComputeHash(bytes);
 
-                return Convert.ToBase64String(hash);
-            }
+            return Convert.ToBase64String(hash);
         }
 
         protected virtual List<RateLimitRule> GetMatchingRules(ClientRequestIdentity identity, List<RateLimitRule> rules = null)
