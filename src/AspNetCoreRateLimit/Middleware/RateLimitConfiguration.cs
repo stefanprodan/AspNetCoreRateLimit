@@ -15,18 +15,15 @@ namespace AspNetCoreRateLimit
         public virtual Func<double> RateIncrementer { get; } = () => 1;
 
         public RateLimitConfiguration(
-            IHttpContextAccessor httpContextAccessor,
             IOptions<IpRateLimitOptions> ipOptions,
             IOptions<ClientRateLimitOptions> clientOptions)
         {
             IpRateLimitOptions = ipOptions?.Value;
             ClientRateLimitOptions = clientOptions?.Value;
-            HttpContextAccessor = httpContextAccessor;
         }
 
         protected readonly IpRateLimitOptions IpRateLimitOptions;
         protected readonly ClientRateLimitOptions ClientRateLimitOptions;
-        protected readonly IHttpContextAccessor HttpContextAccessor;
 
         public virtual void RegisterResolvers()
         {
@@ -35,16 +32,16 @@ namespace AspNetCoreRateLimit
 
             if (clientIdHeader != null)
             {
-                ClientResolvers.Add(new ClientHeaderResolveContributor(HttpContextAccessor, clientIdHeader));
+                ClientResolvers.Add(new ClientHeaderResolveContributor(clientIdHeader));
             }
 
             // the contributors are resolved in the order of their collection index
             if (realIpHeader != null)
             {
-                IpResolvers.Add(new IpHeaderResolveContributor(HttpContextAccessor, realIpHeader));
+                IpResolvers.Add(new IpHeaderResolveContributor(realIpHeader));
             }
 
-            IpResolvers.Add(new IpConnectionResolveContributor(HttpContextAccessor));
+            IpResolvers.Add(new IpConnectionResolveContributor());
         }
 
         protected string GetClientIdHeader()
