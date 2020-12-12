@@ -30,18 +30,31 @@ namespace AspNetCoreRateLimit
 
         public virtual void RegisterResolvers()
         {
-            if (!string.IsNullOrEmpty(ClientRateLimitOptions?.ClientIdHeader) || !string.IsNullOrEmpty(IpRateLimitOptions?.ClientIdHeader))
+            string clientIdHeader = GetClientIdHeader();
+            string realIpHeader = GetRealIp();
+
+            if (clientIdHeader != null)
             {
-                ClientResolvers.Add(new ClientHeaderResolveContributor(HttpContextAccessor, ClientRateLimitOptions.ClientIdHeader));
+                ClientResolvers.Add(new ClientHeaderResolveContributor(HttpContextAccessor, clientIdHeader));
             }
 
             // the contributors are resolved in the order of their collection index
-            if (!string.IsNullOrEmpty(ClientRateLimitOptions?.RealIpHeader) || !string.IsNullOrEmpty(IpRateLimitOptions?.RealIpHeader))
+            if (realIpHeader != null)
             {
-                IpResolvers.Add(new IpHeaderResolveContributor(HttpContextAccessor, IpRateLimitOptions.RealIpHeader));
+                IpResolvers.Add(new IpHeaderResolveContributor(HttpContextAccessor, realIpHeader));
             }
 
             IpResolvers.Add(new IpConnectionResolveContributor(HttpContextAccessor));
+        }
+
+        protected string GetClientIdHeader()
+        {
+            return ClientRateLimitOptions?.ClientIdHeader ?? IpRateLimitOptions?.ClientIdHeader;
+        }
+
+        protected string GetRealIp()
+        {
+            return IpRateLimitOptions?.RealIpHeader ?? ClientRateLimitOptions?.RealIpHeader;
         }
     }
 }
