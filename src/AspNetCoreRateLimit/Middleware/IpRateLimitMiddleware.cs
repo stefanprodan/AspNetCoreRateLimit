@@ -9,12 +9,13 @@ namespace AspNetCoreRateLimit
         private readonly ILogger<IpRateLimitMiddleware> _logger;
 
         public IpRateLimitMiddleware(RequestDelegate next,
+            IProcessingStrategyFactory processingStrategyFactory,
             IOptions<IpRateLimitOptions> options,
             IRateLimitCounterStore counterStore,
             IIpPolicyStore policyStore,
             IRateLimitConfiguration config,
             ILogger<IpRateLimitMiddleware> logger)
-        : base(next, options?.Value, new IpRateLimitProcessor(options?.Value, counterStore, policyStore, config), config)
+        : base(next, options?.Value, new IpRateLimitProcessor(processingStrategyFactory, options?.Value, counterStore, policyStore, config), config)
 
         {
             _logger = logger;

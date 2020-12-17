@@ -11,7 +11,7 @@
     <PackageLicense>http://opensource.org/licenses/MIT</PackageLicense>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/stefanprodan/AspNetCoreRateLimit</RepositoryUrl>
-    <LangVersion>8</LangVersion>
+    <LangVersion>9</LangVersion>
     <Version>3.2.3</Version>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>../../sgKey.snk</AssemblyOriginatorKeyFile>
@@ -27,13 +27,15 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="2.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
   </ItemGroup>
-  
+
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.1'">
-	  <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="3.1.9" />
-	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.9" />
-	  <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.9" />
-	  <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="3.1.9" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.9" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.9" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'net5.0'">
@@ -41,6 +43,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netcoreapp3.1'">
@@ -52,11 +55,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(APPVEYOR)' == 'true'">
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
-  
+
 </Project>
