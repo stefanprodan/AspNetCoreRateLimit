@@ -9,18 +9,20 @@ namespace AspNetCoreRateLimit
         private readonly ClientRateLimitOptions _options;
         private readonly IProcessingStrategy _processingStrategy;
         private readonly IRateLimitStore<ClientRateLimitPolicy> _policyStore;
+        private readonly ICounterKeyBuilder _counterKeyBuilder;
 
         public ClientRateLimitProcessor(
-                IProcessingStrategyFactory processingStrategyFactory,
                 ClientRateLimitOptions options,
                 IRateLimitCounterStore counterStore,
                 IClientPolicyStore policyStore,
-                IRateLimitConfiguration config)
+                IRateLimitConfiguration config,
+                IProcessingStrategy processingStrategy)
             : base(options)
         {
             _options = options;
             _policyStore = policyStore;
-            _processingStrategy = processingStrategyFactory.CreateProcessingStrategy(counterStore, new ClientCounterKeyBuilder(options), config, options);
+            _counterKeyBuilder = new ClientCounterKeyBuilder(options);
+            _processingStrategy = processingStrategy;
         }
 
         public async Task<IEnumerable<RateLimitRule>> GetMatchingRulesAsync(ClientRequestIdentity identity, CancellationToken cancellationToken = default)
@@ -32,7 +34,7 @@ namespace AspNetCoreRateLimit
 
         public async Task<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken = default)
         {
-            return await _processingStrategy.ProcessRequestAsync(requestIdentity, rule, cancellationToken);
+            return await _processingStrategy.ProcessRequestAsync(requestIdentity, rule, _counterKeyBuilder, _options, cancellationToken);
         }
     }
 }

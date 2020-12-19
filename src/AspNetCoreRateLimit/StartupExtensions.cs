@@ -10,7 +10,7 @@ namespace AspNetCoreRateLimit
             services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
             services.AddSingleton<IClientPolicyStore, MemoryCacheClientPolicyStore>();
             services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
-            services.AddSingleton<IProcessingStrategyFactory, ProcessingStrategyFactory>();
+            services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
             return services;
         }
 
@@ -19,15 +19,7 @@ namespace AspNetCoreRateLimit
             services.AddSingleton<IIpPolicyStore, DistributedCacheIpPolicyStore>();
             services.AddSingleton<IClientPolicyStore, DistributedCacheClientPolicyStore>();
             services.AddSingleton<IRateLimitCounterStore, DistributedCacheRateLimitCounterStore>();
-            return services;
-        }
-
-        public static IServiceCollection AddStackExchangeRedisStores(this IServiceCollection services)
-        {
-            services.AddSingleton<IProcessingStrategyFactory, ProcessingStrategyFactory>();
-            services.AddSingleton<IIpPolicyStore, StackExchangeRedisIpPolicyStore>();
-            services.AddSingleton<IClientPolicyStore, StackExchangeRedisClientPolicyStore>();
-            services.AddSingleton<IRateLimitCounterStore, StackExchangeRedisRateLimitCounterStore>();
+            services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
             return services;
         }
 

@@ -8,23 +8,20 @@ namespace AspNetCoreRateLimit
 {
     public abstract class ProcessingStrategy : IProcessingStrategy
     {
-        private readonly RateLimitOptions _options;
-        private readonly ICounterKeyBuilder _counterKeyBuilder;
         private readonly IRateLimitConfiguration _config;
 
-        public ProcessingStrategy(ICounterKeyBuilder counterKeyBuilder, IRateLimitConfiguration config, RateLimitOptions options)
-            : base()
+        protected ProcessingStrategy(IRateLimitConfiguration config)
         {
-            _counterKeyBuilder = counterKeyBuilder;
             _config = config;
-            _options = options;
         }
 
-        protected virtual string BuildCounterKey(ClientRequestIdentity requestIdentity, RateLimitRule rule)
-        {
-            var key = _counterKeyBuilder.Build(requestIdentity, rule);
+        public abstract Task<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, ICounterKeyBuilder counterKeyBuilder, RateLimitOptions rateLimitOptions, CancellationToken cancellationToken = default);
 
-            if (_options.EnableEndpointRateLimiting && _config.EndpointCounterKeyBuilder != null)
+        protected virtual string BuildCounterKey(ClientRequestIdentity requestIdentity, RateLimitRule rule, ICounterKeyBuilder counterKeyBuilder, RateLimitOptions rateLimitOptions)
+        {
+            var key = counterKeyBuilder.Build(requestIdentity, rule);
+
+            if (rateLimitOptions.EnableEndpointRateLimiting && _config.EndpointCounterKeyBuilder != null)
             {
                 key += _config.EndpointCounterKeyBuilder.Build(requestIdentity, rule);
             }
@@ -36,7 +33,5 @@ namespace AspNetCoreRateLimit
 
             return Convert.ToBase64String(hash);
         }
-
-        public abstract Task<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken = default);
     }
 }
