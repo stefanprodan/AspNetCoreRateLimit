@@ -12,24 +12,12 @@ namespace AspNetCoreRateLimit
     public abstract class RateLimitProcessor
     {
         private readonly RateLimitOptions _options;
-        private readonly IRateLimitCounterStore _counterStore;
-        private readonly ICounterKeyBuilder _counterKeyBuilder;
-        private readonly IRateLimitConfiguration _config;
 
-        protected RateLimitProcessor(
-           RateLimitOptions options,
-           IRateLimitCounterStore counterStore,
-           ICounterKeyBuilder counterKeyBuilder,
-           IRateLimitConfiguration config)
+        protected RateLimitProcessor(RateLimitOptions options)
         {
             _options = options;
-            _counterStore = counterStore;
-            _counterKeyBuilder = counterKeyBuilder;
-            _config = config;
         }
 
-        /// The key-lock used for limiting requests.
-        private static readonly AsyncKeyLock AsyncLock = new AsyncKeyLock();
 
         public virtual bool IsWhitelisted(ClientRequestIdentity requestIdentity)
         {
@@ -55,45 +43,6 @@ namespace AspNetCoreRateLimit
             return false;
         }
 
-        public virtual async Task<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken = default)
-        {
-            var counter = new RateLimitCounter
-            {
-                Timestamp = DateTime.UtcNow,
-                Count = 1
-            };
-
-            var counterId = BuildCounterKey(requestIdentity, rule);
-
-            // serial reads and writes on same key
-            using (await AsyncLock.WriterLockAsync(counterId).ConfigureAwait(false))
-            {
-                var entry = await _counterStore.GetAsync(counterId, cancellationToken);
-
-                if (entry.HasValue)
-                {
-                    // entry has not expired
-                    if (entry.Value.Timestamp + rule.PeriodTimespan.Value >= DateTime.UtcNow)
-                    {
-                        // increment request count
-                        var totalCount = entry.Value.Count + _config.RateIncrementer?.Invoke() ?? 1;
-
-                        // deep copy
-                        counter = new RateLimitCounter
-                        {
-                            Timestamp = entry.Value.Timestamp,
-                            Count = totalCount
-                        };
-                    }
-                }
-
-                // stores: id (string) - timestamp (datetime) - total_requests (long)
-                await _counterStore.SetAsync(counterId, counter, rule.PeriodTimespan.Value, cancellationToken);
-            }
-
-            return counter;
-        }
-
         public virtual RateLimitHeaders GetRateLimitHeaders(RateLimitCounter? counter, RateLimitRule rule, CancellationToken cancellationToken = default)
         {
             var headers = new RateLimitHeaders();
@@ -117,23 +66,6 @@ namespace AspNetCoreRateLimit
             headers.Remaining = remaining.ToString();
 
             return headers;
-        }
-
-        protected virtual string BuildCounterKey(ClientRequestIdentity requestIdentity, RateLimitRule rule)
-        {
-            var key = _counterKeyBuilder.Build(requestIdentity, rule);
-
-            if (_options.EnableEndpointRateLimiting && _config.EndpointCounterKeyBuilder != null)
-            {
-                key += _config.EndpointCounterKeyBuilder.Build(requestIdentity, rule);
-            }
-
-            var bytes = Encoding.UTF8.GetBytes(key);
-
-            using var algorithm = new SHA1Managed();
-            var hash = algorithm.ComputeHash(bytes);
-
-            return Convert.ToBase64String(hash);
         }
 
         protected virtual List<RateLimitRule> GetMatchingRules(ClientRequestIdentity identity, List<RateLimitRule> rules = null)
