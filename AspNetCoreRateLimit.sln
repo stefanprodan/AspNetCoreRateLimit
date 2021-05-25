@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26430.12
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -13,6 +13,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCoreRateLimit.Demo", "test\AspNetCoreRateLimit.Demo\AspNetCoreRateLimit.Demo.csproj", "{14C9FF9D-E50A-4A66-AEAB-F2C113743B95}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCoreRateLimit.Tests", "test\AspNetCoreRateLimit.Tests\AspNetCoreRateLimit.Tests.csproj", "{0A7C0247-AE46-4068-AE42-F955AE2A1D0E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetCoreRateLimit.Redis", "src\AspNetCoreRateLimit.Redis\AspNetCoreRateLimit.Redis.csproj", "{45DC4701-59A2-445F-8010-EAB850FF6F2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +34,10 @@ Global
 		{0A7C0247-AE46-4068-AE42-F955AE2A1D0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A7C0247-AE46-4068-AE42-F955AE2A1D0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A7C0247-AE46-4068-AE42-F955AE2A1D0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45DC4701-59A2-445F-8010-EAB850FF6F2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45DC4701-59A2-445F-8010-EAB850FF6F2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45DC4701-59A2-445F-8010-EAB850FF6F2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45DC4701-59A2-445F-8010-EAB850FF6F2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -40,6 +46,7 @@ Global
 		{E9557798-3499-4726-BCB7-5EB7CB4B33E7} = {909648ED-E1F4-4DAE-A274-AEC47BE826F3}
 		{14C9FF9D-E50A-4A66-AEAB-F2C113743B95} = {83B05009-1BC7-4E56-8D4B-0E107CA4D45B}
 		{0A7C0247-AE46-4068-AE42-F955AE2A1D0E} = {83B05009-1BC7-4E56-8D4B-0E107CA4D45B}
+		{45DC4701-59A2-445F-8010-EAB850FF6F2E} = {909648ED-E1F4-4DAE-A274-AEC47BE826F3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2FE0A4A1-855C-4770-A84F-F1CAE18E62EF}
