@@ -9,17 +9,23 @@ namespace AspNetCoreRateLimit
     {
         private readonly IpRateLimitOptions _options;
         private readonly IRateLimitStore<IpRateLimitPolicies> _policyStore;
+        private readonly IProcessingStrategy _processingStrategy;
+        private readonly ICounterKeyBuilder _counterKeyBuilder;
 
         public IpRateLimitProcessor(
-           IpRateLimitOptions options,
-           IRateLimitCounterStore counterStore,
-           IIpPolicyStore policyStore,
-           IRateLimitConfiguration config)
-        : base(options, counterStore, new IpCounterKeyBuilder(options), config)
+                IpRateLimitOptions options,
+                IRateLimitCounterStore counterStore,
+                IIpPolicyStore policyStore,
+                IRateLimitConfiguration config,
+                IProcessingStrategy processingStrategy)
+            : base(options)
         {
             _options = options;
             _policyStore = policyStore;
+            _counterKeyBuilder = new IpCounterKeyBuilder(options);
+            _processingStrategy = processingStrategy;
         }
+
 
         public async Task<IEnumerable<RateLimitRule>> GetMatchingRulesAsync(ClientRequestIdentity identity, CancellationToken cancellationToken = default)
         {
@@ -39,6 +45,11 @@ namespace AspNetCoreRateLimit
             }
 
             return GetMatchingRules(identity, rules);
+        }
+
+        public async Task<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken = default)
+        {
+            return await _processingStrategy.ProcessRequestAsync(requestIdentity, rule, _counterKeyBuilder, _options, cancellationToken);
         }
     }
 }
