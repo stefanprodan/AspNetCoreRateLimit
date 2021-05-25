@@ -5,7 +5,7 @@ namespace AspNetCoreRateLimit
 {
     public static class StartupExtensions
     {
-        public static IServiceCollection AddMemoryCacheStores(this IServiceCollection services)
+        public static IServiceCollection AddInMemoryRateLimiting(this IServiceCollection services)
         {
             services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
             services.AddSingleton<IClientPolicyStore, MemoryCacheClientPolicyStore>();
@@ -14,12 +14,26 @@ namespace AspNetCoreRateLimit
             return services;
         }
 
-        public static IServiceCollection AddDistributedCacheStores(this IServiceCollection services)
+        public static IServiceCollection AddDistributedRateLimiting(this IServiceCollection services)
+        {
+            services.AddDistributedRateLimitingStores();
+            services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
+            return services;
+        }
+
+        public static IServiceCollection AddDistributedRateLimiting<T>(this IServiceCollection services)
+            where T : class, IProcessingStrategy 
+        {
+            services.AddDistributedRateLimitingStores();
+            services.AddSingleton<IProcessingStrategy, T>();
+            return services;
+        }
+
+        private static IServiceCollection AddDistributedRateLimitingStores(this IServiceCollection services)
         {
             services.AddSingleton<IIpPolicyStore, DistributedCacheIpPolicyStore>();
             services.AddSingleton<IClientPolicyStore, DistributedCacheClientPolicyStore>();
             services.AddSingleton<IRateLimitCounterStore, DistributedCacheRateLimitCounterStore>();
-            services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
             return services;
         }
 
