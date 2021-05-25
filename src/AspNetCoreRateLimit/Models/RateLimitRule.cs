@@ -25,5 +25,10 @@ namespace AspNetCoreRateLimit
         /// Maximum number of requests that a client can make in a defined period
         /// </summary>
         public double Limit { get; set; }
+
+        /// <summary>
+        /// Gets or sets a model that represents the QuotaExceeded response (content-type, content, status code).
+        /// </summary>
+        public QuotaExceededResponse QuotaExceededResponse { get; set; }
     }
 }
