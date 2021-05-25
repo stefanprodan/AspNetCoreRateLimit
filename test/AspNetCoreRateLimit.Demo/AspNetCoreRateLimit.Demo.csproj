@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ben.BlockingDetector" Version="0.0.3" />
+    <PackageReference Include="Ben.BlockingDetector" Version="0.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.6" />
   </ItemGroup>
 
