@@ -1,18 +1,18 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using StackExchange.Redis;
 
 namespace AspNetCoreRateLimit.Redis
 {
-    public class StackExchangeRedisProcessingStrategy : ProcessingStrategy
+    public class RedisProcessingStrategy : ProcessingStrategy
     {
         private readonly IConnectionMultiplexer _connectionMultiplexer;
         private readonly IRateLimitConfiguration _config;
-        private readonly ILogger<StackExchangeRedisProcessingStrategy> _logger;
+        private readonly ILogger<RedisProcessingStrategy> _logger;
 
-        public StackExchangeRedisProcessingStrategy(IConnectionMultiplexer connectionMultiplexer, IRateLimitConfiguration config, ILogger<StackExchangeRedisProcessingStrategy> logger)
+        public RedisProcessingStrategy(IConnectionMultiplexer connectionMultiplexer, IRateLimitConfiguration config, ILogger<RedisProcessingStrategy> logger)
             : base(config)
         {
             _connectionMultiplexer = connectionMultiplexer ?? throw new ArgumentException("IConnectionMultiplexer was null. Ensure StackExchange.Redis was successfully registered");

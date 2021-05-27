@@ -4,9 +4,9 @@ namespace AspNetCoreRateLimit.Redis
 {
     public static class StartupExtensions
     {
-        public static IServiceCollection AddStackExchangeRedisRateLimiting(this IServiceCollection services)
+        public static IServiceCollection AddRedisRateLimiting(this IServiceCollection services)
         {
-            services.AddDistributedRateLimiting<StackExchangeRedisProcessingStrategy>();
+            services.AddDistributedRateLimiting<RedisProcessingStrategy>();
             return services;
         }
     }

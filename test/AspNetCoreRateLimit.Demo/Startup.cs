@@ -1,3 +1,4 @@
+using AspNetCoreRateLimit.Redis;
 using Ben.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -40,6 +41,8 @@ namespace AspNetCoreRateLimit.Demo
             // register stores
             services.AddInMemoryRateLimiting();
             //services.AddDistributedRateLimiting<AsyncKeyLockProcessingStrategy>();
+            //services.AddDistributedRateLimiting<RedisProcessingStrategy>();
+            //services.AddRedisRateLimiting();
 
             services.AddMvc((options) =>
             {
