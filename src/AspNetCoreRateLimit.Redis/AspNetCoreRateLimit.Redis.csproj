@@ -1,4 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;netstandard2.0;net5.0;</TargetFrameworks>
     <Description>StackExchange Redis support for ASP.NET Core rate limiting middleware</Description>
@@ -19,11 +20,18 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <DebugType>embedded</DebugType>
   </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
     <PackageReference Include="AspNetCoreRateLimit" Version="4.0.0" />
   </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(APPVEYOR)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+  
 </Project>
