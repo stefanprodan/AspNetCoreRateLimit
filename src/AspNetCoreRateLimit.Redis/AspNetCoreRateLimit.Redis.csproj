@@ -23,7 +23,14 @@
   
   <ItemGroup>
     <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
     <PackageReference Include="AspNetCoreRateLimit" Version="4.0.0" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(Configuration)' == 'Debug' or '$(APPVEYOR)' == 'true'">
+    <ProjectReference Include="..\AspNetCoreRateLimit\AspNetCoreRateLimit.csproj" />
   </ItemGroup>
   
   <ItemGroup>
