@@ -30,5 +30,10 @@ namespace AspNetCoreRateLimit
         /// Gets or sets a model that represents the QuotaExceeded response (content-type, content, status code).
         /// </summary>
         public QuotaExceededResponse QuotaExceededResponse { get; set; }
+
+        /// <summary>
+        /// If MonitorMode is true requests that exceed the limit are only logged, and will execute successfully.
+        /// </summary>
+        public bool MonitorMode { get; set; } = false;
     }
 }
