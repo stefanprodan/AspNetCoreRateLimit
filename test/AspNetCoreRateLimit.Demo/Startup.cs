@@ -20,16 +20,6 @@ namespace AspNetCoreRateLimit.Demo
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // needed to load configuration from appsettings.json
-            services.AddOptions();
-
-            // needed to store rate limit counters and ip rules
-            services.AddMemoryCache();
-
-            // configure ip rate limiting middleware - version 4.0
-
-            // configure client rate limiting middleware - version 4.0
-
             // configure ip rate limiting middleware
             services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
             services.Configure<IpRateLimitPolicies>(Configuration.GetSection("IpRateLimitPolicies"));
