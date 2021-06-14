@@ -5,6 +5,7 @@ AspNetCoreRateLimit is an ASP.NET Core rate limiting solution designed to contro
 
 [![Build status](https://ci.appveyor.com/api/projects/status/jrfxft7anqckn30s?svg=true)](https://ci.appveyor.com/project/stefanprodan/AspNetCoreRateLimit)
 [![NuGet](https://img.shields.io/nuget/v/AspNetCoreRateLimit.svg)](https://www.nuget.org/packages/AspNetCoreRateLimit/)
+[![NuGet](https://img.shields.io/nuget/v/AspNetCoreRateLimit.Redis.svg)](https://www.nuget.org/packages/AspNetCoreRateLimit.Redis/)
 [![GitHub stars](https://img.shields.io/github/stars/stefanprodan/AspNetCoreRateLimit.svg)](https://github.com/stefanprodan/AspNetCoreRateLimit/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/stefanprodan/AspNetCoreRateLimit.svg)](https://github.com/stefanprodan/AspNetCoreRateLimit/network)
 [![License: MIT](https://img.shields.io/github/license/stefanprodan/AspNetCoreRateLimit.svg)](https://opensource.org/licenses/MIT)

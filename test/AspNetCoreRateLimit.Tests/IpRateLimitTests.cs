@@ -220,5 +220,27 @@ namespace AspNetCoreRateLimit.Tests
             // Assert
             Assert.Contains(keyword, content);
         }
+
+        [Theory]
+        [InlineData(ClientType.Wildcard, "84.247.85.232")]
+        [InlineData(ClientType.Regex, "84.247.85.232")]
+        public async Task SpecificIpRuleMonitorActive(ClientType clientType, string ip)
+        {
+            // Arrange
+            int responseStatusCode = 0;
+
+            // Act    
+            for (int i = 0; i < 2; i++)
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, apiValuesPath);
+                request.Headers.Add("X-Real-IP", ip);
+
+                var response = await GetClient(clientType).SendAsync(request);
+                responseStatusCode = (int)response.StatusCode;
+            }
+
+            // Assert
+            Assert.Equal(200, responseStatusCode);
+        }
     }
 }
