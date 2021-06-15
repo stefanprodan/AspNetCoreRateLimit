@@ -157,7 +157,7 @@ namespace AspNetCoreRateLimit
             return new ClientRequestIdentity
             {
                 ClientIp = clientIp,
-                Path = httpContext.Request.Path.ToString().ToLowerInvariant(),
+                Path = httpContext.Request.Path.ToString().ToLowerInvariant().TrimEnd('/'),
                 HttpVerb = httpContext.Request.Method.ToLowerInvariant(),
                 ClientId = clientId ?? "anon"
             };

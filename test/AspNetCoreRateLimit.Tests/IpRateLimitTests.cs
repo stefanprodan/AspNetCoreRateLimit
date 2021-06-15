@@ -7,7 +7,7 @@ namespace AspNetCoreRateLimit.Tests
 {
     public class IpRateLimitTests : BaseClassFixture
     {
-        private const string apiValuesPath = "/api/values";
+        private const string apiValuesPath = "/api/values/";
         private const string apiRateLimitPath = "/api/ipratelimit";
         
         public IpRateLimitTests(RateLimitWebApplicationFactory factory) : base(factory)
