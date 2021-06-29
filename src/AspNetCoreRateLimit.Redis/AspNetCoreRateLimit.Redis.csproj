@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
-    <PackageReference Include="AspNetCoreRateLimit" Version="4.0.0" />
+    <PackageReference Include="AspNetCoreRateLimit" Version="4.0.1" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(Configuration)' == 'Debug' or '$(APPVEYOR)' == 'true'">
