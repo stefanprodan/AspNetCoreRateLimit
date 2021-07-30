@@ -176,7 +176,7 @@ namespace AspNetCoreRateLimit
                 _options.QuotaExceededMessage ??
                 "API calls quota exceeded! maximum admitted {0} per {1}.",
                 rule.Limit,
-                rule.PeriodTimespan.HasValue ? FormatPeriodTimespan(rule.PeriodTimespan) : rule.Period, retryAfter);
+                rule.PeriodTimespan.HasValue ? FormatPeriodTimespan(rule.PeriodTimespan.Value) : rule.Period, retryAfter);
             if (!_options.DisableRateLimitHeaders)
             {
                 httpContext.Response.Headers["Retry-After"] = retryAfter;
@@ -188,38 +188,33 @@ namespace AspNetCoreRateLimit
             return httpContext.Response.WriteAsync(message);
         }
 
-        private static string FormatPeriodTimespan(TimeSpan? period)
+        private static string FormatPeriodTimespan(TimeSpan period)
         {
-            if (!period.HasValue)
-                return "0";
-
-            var periodValue = period.Value;
-
             var sb = new StringBuilder();
 
-            if (periodValue.Days > 0)
+            if (period.Days > 0)
             {
-                sb.Append($"{periodValue.Days}d");
+                sb.Append($"{period.Days}d");
             }
 
-            if (periodValue.Hours > 0)
+            if (period.Hours > 0)
             {
-                sb.Append($"{periodValue.Hours}h");
+                sb.Append($"{period.Hours}h");
             }
 
-            if (periodValue.Minutes > 0)
+            if (period.Minutes > 0)
             {
-                sb.Append($"{periodValue.Minutes}m");
+                sb.Append($"{period.Minutes}m");
             }
 
-            if (periodValue.Seconds > 0)
+            if (period.Seconds > 0)
             {
-                sb.Append($"{periodValue.Seconds}s");
+                sb.Append($"{period.Seconds}s");
             }
 
-            if (periodValue.Milliseconds > 0)
+            if (period.Milliseconds > 0)
             {
-                sb.Append($"{periodValue.Milliseconds}ms");
+                sb.Append($"{period.Milliseconds}ms");
             }
 
             return sb.ToString();
