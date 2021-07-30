@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -173,7 +174,9 @@ namespace AspNetCoreRateLimit
             var message = string.Format(
                 _options.QuotaExceededResponse?.Content ??
                 _options.QuotaExceededMessage ??
-                "API calls quota exceeded! maximum admitted {0} per {1}.", rule.Limit, rule.Period, retryAfter);
+                "API calls quota exceeded! maximum admitted {0} per {1}.",
+                rule.Limit,
+                rule.PeriodTimespan.HasValue ? FormatPeriodTimespan(rule.PeriodTimespan) : rule.Period, retryAfter);
             if (!_options.DisableRateLimitHeaders)
             {
                 httpContext.Response.Headers["Retry-After"] = retryAfter;
@@ -183,6 +186,43 @@ namespace AspNetCoreRateLimit
             httpContext.Response.ContentType = _options.QuotaExceededResponse?.ContentType ?? "text/plain";
 
             return httpContext.Response.WriteAsync(message);
+        }
+
+        private static string FormatPeriodTimespan(TimeSpan? period)
+        {
+            if (!period.HasValue)
+                return "0";
+
+            var periodValue = period.Value;
+
+            var sb = new StringBuilder();
+
+            if (periodValue.Days > 0)
+            {
+                sb.Append($"{periodValue.Days}d");
+            }
+
+            if (periodValue.Hours > 0)
+            {
+                sb.Append($"{periodValue.Hours}h");
+            }
+
+            if (periodValue.Minutes > 0)
+            {
+                sb.Append($"{periodValue.Minutes}m");
+            }
+
+            if (periodValue.Seconds > 0)
+            {
+                sb.Append($"{periodValue.Seconds}s");
+            }
+
+            if (periodValue.Milliseconds > 0)
+            {
+                sb.Append($"{periodValue.Milliseconds}ms");
+            }
+
+            return sb.ToString();
         }
 
         protected abstract void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule);
