@@ -173,6 +173,29 @@ namespace AspNetCoreRateLimit.Tests
         [Theory]
         [InlineData(ClientType.Wildcard)]
         [InlineData(ClientType.Regex)]
+        public async Task WhitelistRootPath(ClientType clientType)
+        {
+            // Arrange
+            var ip = "84.247.85.229";
+            int responseStatusCode = 0;
+
+            // Act    
+            for (int i = 0; i < 4; i++)
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, "/");
+                request.Headers.Add("X-Real-IP", ip);
+
+                var response = await GetClient(clientType).SendAsync(request);
+                responseStatusCode = (int)response.StatusCode;
+            }
+
+            // Assert
+            Assert.NotEqual(429, responseStatusCode);
+        }
+
+        [Theory]
+        [InlineData(ClientType.Wildcard)]
+        [InlineData(ClientType.Regex)]
         public async Task WhitelistClient(ClientType clientType)
         {
             // Arrange
