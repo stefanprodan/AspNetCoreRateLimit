@@ -21,7 +21,17 @@ namespace AspNetCoreRateLimit
 
         public static bool IsRegexMatch(this string source, string value)
         {
-            return source != null && value != null && Regex.IsMatch(source, value, RegexOptions.IgnoreCase);
+            if (source == null || value == null)
+            {
+                return false;
+            }
+            // if the regex is e.g. /api/values/ the path should be an exact match
+            // if all paths below this should be included the regex should be /api/values/*
+            if (!value.EndsWith("$"))
+            {
+                value += '$';
+            }
+            return Regex.IsMatch(source, value, RegexOptions.IgnoreCase);
         }
 
         public static string RetryAfterFrom(this DateTime timestamp, RateLimitRule rule)
