@@ -21,15 +21,19 @@ namespace AspNetCoreRateLimit
 
         public static bool IsRegexMatch(this string source, string value)
         {
-            if (source == null || value == null)
+            if (source == null || string.IsNullOrEmpty(value))
             {
                 return false;
             }
             // if the regex is e.g. /api/values/ the path should be an exact match
             // if all paths below this should be included the regex should be /api/values/*
-            if (!value.EndsWith("$"))
+            if (value[value.Length - 1] != '$')
             {
                 value += '$';
+            }
+            if (value[0] != '^')
+            {
+                value = '^' + value;
             }
             return Regex.IsMatch(source, value, RegexOptions.IgnoreCase);
         }
