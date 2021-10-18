@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Collections.Generic;
 
 namespace AspNetCoreRateLimit.Demo
 {
@@ -64,6 +65,12 @@ namespace AspNetCoreRateLimit.Demo
             }
 
             app.UseHttpsRedirection();
+
+            app.UseDefaultFiles(new DefaultFilesOptions 
+            { 
+                DefaultFileNames = new List<string> { "index.html" } 
+            });
+            app.UseStaticFiles();
 
             app.UseMvc();
         }
