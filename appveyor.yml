@@ -1,5 +1,5 @@
 version: '{build}'
-os: Visual Studio 2019 Preview
+os: Visual Studio 2022
 pull_requests:
   do_not_increment_build_number: true
 branches:
