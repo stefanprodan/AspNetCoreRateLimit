@@ -35,7 +35,7 @@ namespace AspNetCoreRateLimit.Redis
             var intervalStart = new DateTime(numberOfIntervals * interval.Ticks, DateTimeKind.Utc);
 
             _logger.LogDebug("Calling Lua script. {counterId}, {timeout}, {delta}", counterId, interval.TotalSeconds, 1D);
-            var count = await _connectionMultiplexer.GetDatabase().ScriptEvaluateAsync(_atomicIncrement, new { key = counterId, timeout = interval.TotalSeconds, delta = RateIncrementer?.Invoke() ?? 1D });
+            var count = await _connectionMultiplexer.GetDatabase().ScriptEvaluateAsync(_atomicIncrement, new { key = new RedisKey(counterId), timeout = interval.TotalSeconds, delta = RateIncrementer?.Invoke() ?? 1D });
             return new RateLimitCounter
             {
                 Count = (double)count,
