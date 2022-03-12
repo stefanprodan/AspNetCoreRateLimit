@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -175,7 +176,9 @@ namespace AspNetCoreRateLimit
             var message = string.Format(
                 _options.QuotaExceededResponse?.Content ??
                 _options.QuotaExceededMessage ??
-                "API calls quota exceeded! maximum admitted {0} per {1}.", rule.Limit, rule.Period, retryAfter);
+                "API calls quota exceeded! maximum admitted {0} per {1}.",
+                rule.Limit,
+                rule.PeriodTimespan.HasValue ? FormatPeriodTimespan(rule.PeriodTimespan.Value) : rule.Period, retryAfter);
             if (!_options.DisableRateLimitHeaders)
             {
                 httpContext.Response.Headers["Retry-After"] = retryAfter;
@@ -185,6 +188,38 @@ namespace AspNetCoreRateLimit
             httpContext.Response.ContentType = _options.QuotaExceededResponse?.ContentType ?? "text/plain";
 
             return httpContext.Response.WriteAsync(message);
+        }
+
+        private static string FormatPeriodTimespan(TimeSpan period)
+        {
+            var sb = new StringBuilder();
+
+            if (period.Days > 0)
+            {
+                sb.Append($"{period.Days}d");
+            }
+
+            if (period.Hours > 0)
+            {
+                sb.Append($"{period.Hours}h");
+            }
+
+            if (period.Minutes > 0)
+            {
+                sb.Append($"{period.Minutes}m");
+            }
+
+            if (period.Seconds > 0)
+            {
+                sb.Append($"{period.Seconds}s");
+            }
+
+            if (period.Milliseconds > 0)
+            {
+                sb.Append($"{period.Milliseconds}ms");
+            }
+
+            return sb.ToString();
         }
 
         protected abstract void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule);
