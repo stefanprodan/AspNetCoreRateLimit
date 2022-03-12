@@ -12,7 +12,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/stefanprodan/AspNetCoreRateLimit</RepositoryUrl>
     <LangVersion>9</LangVersion>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>../../sgKey.snk</AssemblyOriginatorKeyFile>
     <DelaySign>false</DelaySign>

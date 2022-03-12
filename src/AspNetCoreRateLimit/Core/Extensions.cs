@@ -27,7 +27,7 @@ namespace AspNetCoreRateLimit
             }
             // if the regex is e.g. /api/values/ the path should be an exact match
             // if all paths below this should be included the regex should be /api/values/*
-            if (value[value.Length - 1] != '$')
+            if (value[^1] != '$')
             {
                 value += '$';
             }
