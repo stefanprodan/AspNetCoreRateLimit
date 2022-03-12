@@ -13,9 +13,7 @@ namespace AspNetCoreRateLimit
 
         public ClientRateLimitProcessor(
                 ClientRateLimitOptions options,
-                IRateLimitCounterStore counterStore,
                 IClientPolicyStore policyStore,
-                IRateLimitConfiguration config,
                 IProcessingStrategy processingStrategy)
             : base(options)
         {

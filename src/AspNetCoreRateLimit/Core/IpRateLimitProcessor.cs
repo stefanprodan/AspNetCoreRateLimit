@@ -14,9 +14,7 @@ namespace AspNetCoreRateLimit
 
         public IpRateLimitProcessor(
                 IpRateLimitOptions options,
-                IRateLimitCounterStore counterStore,
                 IIpPolicyStore policyStore,
-                IRateLimitConfiguration config,
                 IProcessingStrategy processingStrategy)
             : base(options)
         {
