@@ -28,11 +28,14 @@ namespace AspNetCoreRateLimit.Demo
             // configure client rate limiting middleware
             services.Configure<ClientRateLimitOptions>(Configuration.GetSection("ClientRateLimiting"));
             services.Configure<ClientRateLimitPolicies>(Configuration.GetSection("ClientRateLimitPolicies"));
+            
+            // configure Redis rate limiting strategy
+            services.Configure<RedisRateLimitOptions>(Configuration.GetSection("RedisRateLimitPolicies"));
 
             // register stores
             services.AddInMemoryRateLimiting();
             //services.AddDistributedRateLimiting<AsyncKeyLockProcessingStrategy>();
-            //services.AddDistributedRateLimiting<RedisProcessingStrategy>();
+            // services.AddDistributedRateLimiting<RedisProcessingStrategy>();
             //services.AddRedisRateLimiting();
 
             services.AddMvc((options) =>
