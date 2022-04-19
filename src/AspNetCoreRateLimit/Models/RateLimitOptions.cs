@@ -58,7 +58,7 @@ namespace AspNetCoreRateLimit
         public bool EnableEndpointRateLimiting { get; set; }
 
         /// <summary>
-        /// Disables X-Rate-Limit and Rety-After headers
+        /// Disables X-Rate-Limit and Retry-After headers
         /// </summary>
         public bool DisableRateLimitHeaders { get; set; }
 
