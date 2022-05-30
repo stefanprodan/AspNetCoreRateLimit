@@ -21,10 +21,12 @@ namespace AspNetCoreRateLimit
 
         public override async Task<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, ICounterKeyBuilder counterKeyBuilder, RateLimitOptions rateLimitOptions, CancellationToken cancellationToken = default)
         {
+            var increment = _config.RateIncrementer?.Invoke() ?? 1;
+
             var counter = new RateLimitCounter
             {
                 Timestamp = DateTime.UtcNow,
-                Count = 1
+                Count = increment
             };
 
             var counterId = BuildCounterKey(requestIdentity, rule, counterKeyBuilder, rateLimitOptions);
@@ -40,7 +42,7 @@ namespace AspNetCoreRateLimit
                     if (entry.Value.Timestamp + rule.PeriodTimespan.Value >= DateTime.UtcNow)
                     {
                         // increment request count
-                        var totalCount = entry.Value.Count + _config.RateIncrementer?.Invoke() ?? 1;
+                        var totalCount = entry.Value.Count + increment;
 
                         // deep copy
                         counter = new RateLimitCounter
