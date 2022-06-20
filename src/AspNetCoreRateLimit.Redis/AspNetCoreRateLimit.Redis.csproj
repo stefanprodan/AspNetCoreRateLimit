@@ -22,7 +22,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="StackExchange.Redis" Version="2.5.61" />
+    <PackageReference Include="StackExchange.Redis" Version="2.6.45" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
