@@ -1,4 +1,3 @@
-using AspNetCoreRateLimit.Redis;
 using Ben.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -6,6 +5,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Collections.Generic;
+using AspNetCoreRateLimit.Redis.BodyParameter;
+using AspNetCoreRateLimit.Redis.BodyParameter.Models;
+using StackExchange.Redis;
 
 namespace AspNetCoreRateLimit.Demo
 {
@@ -29,18 +31,44 @@ namespace AspNetCoreRateLimit.Demo
             services.Configure<ClientRateLimitOptions>(Configuration.GetSection("ClientRateLimiting"));
             services.Configure<ClientRateLimitPolicies>(Configuration.GetSection("ClientRateLimitPolicies"));
 
+            #region Custom: Body Parameter Rate Limit
+
+            // NOTE: The following configurations overwrite the above configurations.
+            
+            // configure ip rate limiting middleware
+            services.Configure<IpBodyParameterRateLimitOptions>(Configuration.GetSection("IpBodyParameterRateLimiting"));
+            services.Configure<IpBodyParameterRateLimitPolicies>(Configuration.GetSection("IpBodyParameterRateLimitPolicies"));
+
+            // configure client rate limiting middleware
+            services.Configure<ClientBodyParameterRateLimitOptions>(Configuration.GetSection(ClientBodyParameterRateLimitOptions.GetConfigurationName()));
+            services.Configure<ClientBodyParameterRateLimitPolicies>(Configuration.GetSection(ClientBodyParameterRateLimitPolicies.GetConfigurationName()));
+
+            var configurationOptions = ConfigurationOptions.Parse(Configuration["ConnectionStrings:Redis"], true);
+            configurationOptions.ResolveDns = true;
+
+            services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(configurationOptions));
+            services.AddStackExchangeRedisCache(options => { options.ConfigurationOptions = configurationOptions; });
+
+            services.AddDistributedMemoryCache();
+            
+            services.AddDistributedBodyParameterRateLimitingStores();
+
+            services.AddHttpContextAccessor();
+
+            #endregion
+            
             // register stores
-            services.AddInMemoryRateLimiting();
+            //services.AddInMemoryRateLimiting();
             //services.AddDistributedRateLimiting<AsyncKeyLockProcessingStrategy>();
             //services.AddDistributedRateLimiting<RedisProcessingStrategy>();
             //services.AddRedisRateLimiting();
-
+            
             services.AddMvc((options) =>
             {
                 options.EnableEndpointRouting = false;
+                options.AddBodyParameterRateLimitFilter(); // Custom: Body Parameter Rate Limit
 
             }).AddNewtonsoftJson();
-
 
             // configure the resolvers
             services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using AspNetCoreRateLimit.Redis.BodyParameter;
 
 namespace AspNetCoreRateLimit.Demo.Controllers
 {
@@ -22,7 +23,7 @@ namespace AspNetCoreRateLimit.Demo.Controllers
 
         // POST api/values
         [HttpPost]
-        public void Post([FromBody]string value)
+        public void Post([FromBody] [ClientRateLimit] string value)
         {
         }
 
