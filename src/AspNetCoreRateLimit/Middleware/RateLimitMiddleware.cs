@@ -183,7 +183,12 @@ namespace AspNetCoreRateLimit
             {
                 httpContext.Response.Headers["Retry-After"] = retryAfter;
             }
-
+            if (rule.Limit == 0 && _options.HttpStatusCodeForLimitZeroRequests.HasValue)
+            {
+                httpContext.Response.StatusCode = _options.HttpStatusCodeForLimitZeroRequests.Value;
+                httpContext.Response.ContentType = "text/plain";
+                return httpContext.Response.WriteAsync("");
+            }
             httpContext.Response.StatusCode = _options.QuotaExceededResponse?.StatusCode ?? _options.HttpStatusCode;
             httpContext.Response.ContentType = _options.QuotaExceededResponse?.ContentType ?? "text/plain";
 

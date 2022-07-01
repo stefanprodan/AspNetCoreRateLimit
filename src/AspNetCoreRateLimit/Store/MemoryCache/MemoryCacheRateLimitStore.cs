@@ -45,6 +45,10 @@ namespace AspNetCoreRateLimit
 
             if (expirationTime.HasValue)
             {
+                if (expirationTime.Value.TotalMilliseconds == 0)
+                {
+                    return Task.CompletedTask;
+                }
                 options.SetAbsoluteExpiration(expirationTime.Value);
             }
 

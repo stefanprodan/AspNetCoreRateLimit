@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -21,10 +22,13 @@ namespace AspNetCoreRateLimit
 
         public IPAddress End { get; set; }
 
+        public List<IPAddress> IPList { get; set; }
+
         public IpAddressRange()
         {
             Begin = new IPAddress(0L);
             End = new IPAddress(0L);
+            IPList = new List<IPAddress>();
         }
 
         public IpAddressRange(string ipRangeString)
@@ -73,12 +77,22 @@ namespace AspNetCoreRateLimit
                 return;
             }
 
+            // Pattern 5. List of ips: "169.258.0.0,169.258.0.255"
+            var m5 = Regex.Match(ipRangeString, @"^([\da-f\.:]+)(,[\da-f\.:]+)*$", RegexOptions.IgnoreCase);
+            if (m5.Success)
+            {
+                IPList = new List<IPAddress>();
+                IPList.AddRange(ipRangeString.Split(',').Select(ipString=> IPAddress.Parse(ipString)));
+                return;
+            }
+
             throw new FormatException("Unknown IP range string.");
         }
 
         public bool Contains(IPAddress ipaddress)
         {
-            if (ipaddress.AddressFamily != Begin.AddressFamily) return false;
+            if (IPList != null && IPList.Contains(ipaddress)) return true;
+            if (Begin == null || ipaddress.AddressFamily != Begin.AddressFamily) return false;
             var adrBytes = ipaddress.GetAddressBytes();
             return Bits.GE(Begin.GetAddressBytes(), adrBytes) && Bits.LE(End.GetAddressBytes(), adrBytes);
         }

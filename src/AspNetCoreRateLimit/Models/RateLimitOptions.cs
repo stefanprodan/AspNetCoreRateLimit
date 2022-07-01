@@ -31,6 +31,11 @@ namespace AspNetCoreRateLimit
         public int HttpStatusCode { get; set; } = 429;
 
         /// <summary>
+        /// Gets or sets the HTTP Status code returned when rate limiting occurs, by default value is HttpStatusCode value.
+        /// </summary>
+        public int? HttpStatusCodeForLimitZeroRequests { get; set; }
+
+        /// <summary>
         /// Gets or sets a value that will be used as a formatter for the QuotaExceeded response message.
         /// If none specified the default will be: 
         /// API calls quota exceeded! maximum admitted {0} per {1}
@@ -56,6 +61,12 @@ namespace AspNetCoreRateLimit
         /// Enables endpoint rate limiting based URL path and HTTP verb
         /// </summary>
         public bool EnableEndpointRateLimiting { get; set; }
+
+        /// <summary>
+        /// Defines if general rules for an endpoint should be discarded if an ip o client id rule is defined for the same endpoint.
+        /// By default they are only discarded if there is any rule for the same period.
+        /// </summary>
+        public bool DiscardEndpointGeneralRulesWhenExistsIPOrClienIdRule { get; set; }
 
         /// <summary>
         /// Disables X-Rate-Limit and Retry-After headers
