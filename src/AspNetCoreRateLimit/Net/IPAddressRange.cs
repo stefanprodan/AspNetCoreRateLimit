@@ -91,10 +91,17 @@ namespace AspNetCoreRateLimit
 
         public bool Contains(IPAddress ipaddress)
         {
-            if (IPList != null && IPList.Contains(ipaddress)) return true;
-            if (Begin == null || ipaddress.AddressFamily != Begin.AddressFamily) return false;
-            var adrBytes = ipaddress.GetAddressBytes();
-            return Bits.GE(Begin.GetAddressBytes(), adrBytes) && Bits.LE(End.GetAddressBytes(), adrBytes);
+            if (IPList != null)
+            {
+                var adrBytes = ipaddress.GetAddressBytes();
+                return IPList.Any(e => ipaddress.AddressFamily == e.AddressFamily && Bits.EQ(e.GetAddressBytes(), adrBytes));
+            }
+            else
+            {
+                if (Begin == null || ipaddress.AddressFamily != Begin.AddressFamily) return false;
+                var adrBytes = ipaddress.GetAddressBytes();
+                return Bits.GE(Begin.GetAddressBytes(), adrBytes) && Bits.LE(End.GetAddressBytes(), adrBytes);
+            }
         }
     }
 
@@ -118,6 +125,13 @@ namespace AspNetCoreRateLimit
         internal static bool GE(byte[] A, byte[] B)
         {
             return A.Zip(B, (a, b) => a == b ? 0 : a < b ? 1 : -1)
+                .SkipWhile(c => c == 0)
+                .FirstOrDefault() >= 0;
+        }
+
+        internal static bool EQ(byte[] A, byte[] B)
+        {
+            return A.Zip(B, (a, b) => a == b ? 0 : 1)
                 .SkipWhile(c => c == 0)
                 .FirstOrDefault() >= 0;
         }
