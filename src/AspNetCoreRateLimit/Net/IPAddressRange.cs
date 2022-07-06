@@ -133,7 +133,7 @@ namespace AspNetCoreRateLimit
         {
             return A.Zip(B, (a, b) => a == b ? 0 : 1)
                 .SkipWhile(c => c == 0)
-                .FirstOrDefault() >= 0;
+                .FirstOrDefault() == 0;
         }
 
         internal static bool LE(byte[] A, byte[] B)
