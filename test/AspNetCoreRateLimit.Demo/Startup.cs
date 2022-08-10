@@ -46,19 +46,19 @@ namespace AspNetCoreRateLimit.Demo
             var configurationOptions = ConfigurationOptions.Parse(Configuration["ConnectionStrings:Redis"], true);
             configurationOptions.ResolveDns = true;
 
-            services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(configurationOptions));
-            services.AddStackExchangeRedisCache(options => { options.ConfigurationOptions = configurationOptions; });
+            //services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(configurationOptions));
+            //services.AddStackExchangeRedisCache(options => { options.ConfigurationOptions = configurationOptions; });
 
-            services.AddDistributedMemoryCache();
+            //services.AddDistributedMemoryCache();
             
-            services.AddDistributedBodyParameterRateLimitingStores();
+            //services.AddDistributedBodyParameterRateLimitingStores();
 
             services.AddHttpContextAccessor();
 
             #endregion
             
             // register stores
-            //services.AddInMemoryRateLimiting();
+            services.AddInMemoryRateLimiting();
             //services.AddDistributedRateLimiting<AsyncKeyLockProcessingStrategy>();
             //services.AddDistributedRateLimiting<RedisProcessingStrategy>();
             //services.AddRedisRateLimiting();
