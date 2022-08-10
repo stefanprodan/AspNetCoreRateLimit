@@ -28,6 +28,23 @@ namespace AspNetCoreRateLimit.Demo
 
                 // seed IP data from appsettings
                 await ipPolicyStore.SeedAsync();
+
+                #region Custom: Body Parameter Rate Limit
+
+                // get the ClientPolicyStore instance
+                var clientBodyParameterPolicyStore = scope.ServiceProvider.GetRequiredService<Redis.BodyParameter.Store.IClientBodyParameterPolicyStore>();
+
+                // seed Client data from appsettings
+                await clientBodyParameterPolicyStore.SeedAsync();
+                
+                // get the IpPolicyStore instance
+                var ipBodyParameterPolicyStore = scope.ServiceProvider.GetRequiredService<Redis.BodyParameter.Store.IIpBodyParameterPolicyStore>();
+
+                // seed IP data from appsettings
+                await ipBodyParameterPolicyStore.SeedAsync();
+
+                #endregion
+                
             }
 
             await webHost.RunAsync();

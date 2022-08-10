@@ -10,9 +10,11 @@
   <ItemGroup>
     <PackageReference Include="Ben.BlockingDetector" Version="0.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.0-preview.4.22251.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\AspNetCoreRateLimit.Redis.BodyParameter\AspNetCoreRateLimit.Redis.BodyParameter.csproj" />
     <ProjectReference Include="..\..\src\AspNetCoreRateLimit.Redis\AspNetCoreRateLimit.Redis.csproj" />
     <ProjectReference Include="..\..\src\AspNetCoreRateLimit\AspNetCoreRateLimit.csproj" />
   </ItemGroup>
