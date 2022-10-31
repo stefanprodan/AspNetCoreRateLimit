@@ -10,6 +10,9 @@ AspNetCoreRateLimit is an ASP.NET Core rate limiting solution designed to contro
 [![GitHub forks](https://img.shields.io/github/forks/stefanprodan/AspNetCoreRateLimit.svg)](https://github.com/stefanprodan/AspNetCoreRateLimit/network)
 [![License: MIT](https://img.shields.io/github/license/stefanprodan/AspNetCoreRateLimit.svg)](https://opensource.org/licenses/MIT)
 
+[Built-in Rate Limiting support - part of .NET 7](https://github.com/stefanprodan/AspNetCoreRateLimit/issues/382) 
+
+
 **Documentation**
 
 [Version 3.x.x Breaking Changes](https://github.com/stefanprodan/AspNetCoreRateLimit/wiki/Version-3.0.0-Breaking-Changes)
