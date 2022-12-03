@@ -8,7 +8,7 @@
 		<PackageId>AspNetCoreRateLimit</PackageId>
 		<PackageTags>aspnetcore;rate-limit;throttle</PackageTags>
 		<PackageProjectUrl>https://github.com/stefanprodan/AspNetCoreRateLimit</PackageProjectUrl>
-		<PackageLicense>http://opensource.org/licenses/MIT</PackageLicense>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/stefanprodan/AspNetCoreRateLimit</RepositoryUrl>
 		<Version>5.0.0</Version>
