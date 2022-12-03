@@ -1,44 +1,41 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  
-  <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;netstandard2.0;net5.0;net6.0;</TargetFrameworks>
-    <Description>StackExchange Redis support for ASP.NET Core rate limiting middleware</Description>
-    <Authors>Nick Cromwell, Cristi Pufu</Authors>
-    <AssemblyName>AspNetCoreRateLimit.Redis</AssemblyName>
-    <PackageId>AspNetCoreRateLimit.Redis</PackageId>
-    <PackageTags>aspnetcore;rate-limit;throttle;redis</PackageTags>
-    <PackageProjectUrl>https://github.com/stefanprodan/AspNetCoreRateLimit</PackageProjectUrl>
-    <PackageLicense>http://opensource.org/licenses/MIT</PackageLicense>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/stefanprodan/AspNetCoreRateLimit</RepositoryUrl>
-    <LangVersion>9</LangVersion>
-    <Version>1.0.1</Version>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>../../sgKey.snk</AssemblyOriginatorKeyFile>
-    <DelaySign>false</DelaySign>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <DebugType>embedded</DebugType>
-  </PropertyGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="StackExchange.Redis" Version="2.6.80" />
-  </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Release'">
-    <PackageReference Include="AspNetCoreRateLimit" Version="4.0.2" />
-  </ItemGroup>
-  
-  <ItemGroup Condition="'$(Configuration)' == 'Debug' or '$(APPVEYOR)' == 'true'">
-    <ProjectReference Include="..\AspNetCoreRateLimit\AspNetCoreRateLimit.csproj" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFrameworks>net6.0</TargetFrameworks>
+		<Description>StackExchange Redis support for ASP.NET Core rate limiting middleware</Description>
+		<Authors>Nick Cromwell, Cristi Pufu</Authors>
+		<AssemblyName>AspNetCoreRateLimit.Redis</AssemblyName>
+		<PackageId>AspNetCoreRateLimit.Redis</PackageId>
+		<PackageTags>aspnetcore;rate-limit;throttle;redis</PackageTags>
+		<PackageProjectUrl>https://github.com/stefanprodan/AspNetCoreRateLimit</PackageProjectUrl>
+		<PackageLicense>http://opensource.org/licenses/MIT</PackageLicense>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/stefanprodan/AspNetCoreRateLimit</RepositoryUrl>
+		<Version>2.0.0</Version>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>../../sgKey.snk</AssemblyOriginatorKeyFile>
+		<DelaySign>false</DelaySign>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<DebugType>embedded</DebugType>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(APPVEYOR)' == 'true'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-  </PropertyGroup>
-  
+	<ItemGroup>
+		<PackageReference Include="StackExchange.Redis" Version="2.6.80" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(Configuration)' == 'Release'">
+		<PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(Configuration)' == 'Debug' or '$(APPVEYOR)' == 'true'">
+		<ProjectReference Include="..\AspNetCoreRateLimit\AspNetCoreRateLimit.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(APPVEYOR)' == 'true'">
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+	</PropertyGroup>
+
 </Project>

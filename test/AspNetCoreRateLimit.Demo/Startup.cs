@@ -1,4 +1,3 @@
-using AspNetCoreRateLimit.Redis;
 using Ben.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -39,7 +38,7 @@ namespace AspNetCoreRateLimit.Demo
             {
                 options.EnableEndpointRouting = false;
 
-            }).AddNewtonsoftJson();
+            });
 
 
             // configure the resolvers
