@@ -1,3 +1,4 @@
+using AsyncKeyedLock;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace AspNetCoreRateLimit
         }
 
         /// The key-lock used for limiting requests.
-        private static readonly AsyncKeyLock AsyncLock = new AsyncKeyLock();
+        private static readonly AsyncKeyedLocker<string> AsyncLock = new(new AsyncKeyedLockOptions(poolSize: 20, poolInitialFill: 0));
 
         public override async Task<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, ICounterKeyBuilder counterKeyBuilder, RateLimitOptions rateLimitOptions, CancellationToken cancellationToken = default)
         {
@@ -32,7 +33,7 @@ namespace AspNetCoreRateLimit
             var counterId = BuildCounterKey(requestIdentity, rule, counterKeyBuilder, rateLimitOptions);
 
             // serial reads and writes on same key
-            using (await AsyncLock.WriterLockAsync(counterId).ConfigureAwait(false))
+            using (await AsyncLock.LockAsync(counterId, cancellationToken).ConfigureAwait(false))
             {
                 var entry = await _counterStore.GetAsync(counterId, cancellationToken);
 
