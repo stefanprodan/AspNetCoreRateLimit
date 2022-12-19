@@ -18,7 +18,11 @@ namespace AspNetCoreRateLimit
         }
 
         /// The key-lock used for limiting requests.
-        private static readonly AsyncKeyedLocker<string> AsyncLock = new(new AsyncKeyedLockOptions(poolSize: 20, poolInitialFill: 0));
+        private static readonly AsyncKeyedLocker<string> AsyncLock = new(o =>
+        {
+            o.PoolSize = 20;
+            o.PoolInitialFill = 0;
+        });
 
         public override async Task<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, ICounterKeyBuilder counterKeyBuilder, RateLimitOptions rateLimitOptions, CancellationToken cancellationToken = default)
         {
