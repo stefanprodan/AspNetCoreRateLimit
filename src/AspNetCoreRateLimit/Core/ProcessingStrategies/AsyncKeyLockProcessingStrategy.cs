@@ -21,7 +21,7 @@ namespace AspNetCoreRateLimit
         private static readonly AsyncKeyedLocker<string> AsyncLock = new(o =>
         {
             o.PoolSize = 20;
-            o.PoolInitialFill = 0;
+            o.PoolInitialFill = 1;
         });
 
         public override async Task<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, ICounterKeyBuilder counterKeyBuilder, RateLimitOptions rateLimitOptions, CancellationToken cancellationToken = default)
