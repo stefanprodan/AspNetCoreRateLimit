@@ -35,7 +35,7 @@ namespace AspNetCoreRateLimit.Demo.Controllers
                 Limit = 100
             });
 
-            await _clientPolicyStore.SetAsync(id, policy, cancellationToken: HttpContext.RequestAborted);
+            await _clientPolicyStore.SetAsync(id, policy, cancellationToken: HttpContext.RequestAborted).ConfigureAwait(false);
         }
     }
 }

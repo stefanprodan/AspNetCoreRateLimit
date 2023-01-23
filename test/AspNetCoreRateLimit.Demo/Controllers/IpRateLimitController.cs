@@ -39,7 +39,7 @@ namespace AspNetCoreRateLimit.Demo.Controllers
                 })
             });
 
-            await _ipPolicyStore.SetAsync(_options.IpPolicyPrefix, policy, cancellationToken: HttpContext.RequestAborted);
+            await _ipPolicyStore.SetAsync(_options.IpPolicyPrefix, policy, cancellationToken: HttpContext.RequestAborted).ConfigureAwait(false);
         }
     }
 }
