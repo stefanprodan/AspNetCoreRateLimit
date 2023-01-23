@@ -67,17 +67,17 @@ namespace AspNetCoreRateLimit
         public static IPAddress ParseIp(string ipAddress)
         {
             //remove port number from ip address if any
-            ipAddress = ipAddress.Split(',').First().Trim();
+            ipAddress = ipAddress.Split(',', 1)[0].Trim();
 
-            var portDelimiterPos = ipAddress.LastIndexOf(":", StringComparison.CurrentCultureIgnoreCase);
-            var ipv6WithPortStart = ipAddress.StartsWith("[");
-            var ipv6End = ipAddress.IndexOf("]");
+            var portDelimiterPos = ipAddress.LastIndexOf(":", StringComparison.Ordinal);
+            var ipv6WithPortStart = ipAddress.StartsWith("[", StringComparison.Ordinal);
+            var ipv6End = ipAddress.IndexOf("]", StringComparison.Ordinal);
 
             if (portDelimiterPos != -1
-                && portDelimiterPos == ipAddress.IndexOf(":", StringComparison.CurrentCultureIgnoreCase)
+                && portDelimiterPos == ipAddress.IndexOf(":", StringComparison.Ordinal)
                 || ipv6WithPortStart && ipv6End != -1 && ipv6End < portDelimiterPos)
             {
-                ipAddress = ipAddress.Substring(0, portDelimiterPos);
+                ipAddress = ipAddress[..portDelimiterPos];
             }
 
             return IPAddress.Parse(ipAddress);
