@@ -21,7 +21,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="StackExchange.Redis" Version="2.6.90" />
+		<PackageReference Include="StackExchange.Redis" Version="2.6.96" />
 	</ItemGroup>
 	<ItemGroup Condition="'$(Configuration)' == 'Release'">
 		<PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
