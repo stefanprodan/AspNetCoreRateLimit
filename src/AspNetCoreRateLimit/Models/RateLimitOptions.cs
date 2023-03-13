@@ -71,5 +71,10 @@ namespace AspNetCoreRateLimit
         /// Gets or sets behavior after the request is blocked
         /// </summary>
         public Func<HttpContext, ClientRequestIdentity, RateLimitCounter, RateLimitRule, Task> RequestBlockedBehaviorAsync { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the behavior that determines whether the request pipeline should be aborted in case of any rate limiting issues (i.e. Redis or SQLServer is not available when used as a distributed counter store).
+        /// </summary>
+        public bool DoNotInterruptRequestPipelineOnFailure { get; set; }
     }
 }
