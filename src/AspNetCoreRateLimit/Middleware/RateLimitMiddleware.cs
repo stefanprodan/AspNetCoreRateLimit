@@ -37,6 +37,14 @@ namespace AspNetCoreRateLimit
                 return;
             }
 
+            var rules = (await _processor.GetMatchingRulesAsync(identity, context.RequestAborted)).ToArray();
+
+            if (!rules.Any())
+            {
+                await _next.Invoke(context);
+                return;
+            }
+
             // compute identity from request
             var identity = await ResolveIdentityAsync(context);
 
@@ -46,8 +54,6 @@ namespace AspNetCoreRateLimit
                 await _next.Invoke(context);
                 return;
             }
-
-            var rules = await _processor.GetMatchingRulesAsync(identity, context.RequestAborted);
 
             var rulesDict = new Dictionary<RateLimitRule, RateLimitCounter>();
 
