@@ -59,7 +59,7 @@ namespace AspNetCoreRateLimit
                 }
 
                 // stores: id (string) - timestamp (datetime) - total_requests (long)
-                await _counterStore.SetAsync(counterId, counter, rule.PeriodTimespan.Value, cancellationToken);
+                await _counterStore.SetAsync(counterId, counter, rule.PeriodTimespan.Value, cancellationToken).ConfigureAwait(false);
             }
 
             return counter;
