@@ -4,6 +4,7 @@ using StackExchange.Redis;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace AspNetCoreRateLimit.Redis
 {
@@ -13,15 +14,24 @@ namespace AspNetCoreRateLimit.Redis
         private readonly IRateLimitConfiguration _config;
         private readonly ILogger<RedisProcessingStrategy> _logger;
 
-        public RedisProcessingStrategy(IConnectionMultiplexer connectionMultiplexer, IRateLimitConfiguration config, ILogger<RedisProcessingStrategy> logger)
+        public RedisProcessingStrategy(IConnectionMultiplexer connectionMultiplexer, 
+                                       IRateLimitConfiguration config, 
+                                       ILogger<RedisProcessingStrategy> logger, 
+                                       IOptions<RedisRateLimitConfiguration> optionAccessor
+            )
             : base(config)
         {
-            _connectionMultiplexer = connectionMultiplexer ?? throw new ArgumentException("IConnectionMultiplexer was null. Ensure StackExchange.Redis was successfully registered");
             _config = config;
             _logger = logger;
+            var options = optionAccessor?.Value;
+            _connectionMultiplexer = options?.ConnectionMultiplexerFactory == null
+                ? connectionMultiplexer ?? throw new ArgumentException(
+                    "IConnectionMultiplexer was null. Ensure StackExchange.Redis was successfully registered")
+                : options.ConnectionMultiplexerFactory().GetAwaiter().GetResult();
+
         }
 
-        static private readonly LuaScript _atomicIncrement = LuaScript.Prepare("local count = redis.call(\"INCRBYFLOAT\", @key, tonumber(@delta)) local ttl = redis.call(\"TTL\", @key) if ttl == -1 then redis.call(\"EXPIRE\", @key, @timeout) end return count");
+        private static readonly LuaScript _atomicIncrement = LuaScript.Prepare("local count = redis.call(\"INCRBYFLOAT\", @key, tonumber(@delta)) local ttl = redis.call(\"TTL\", @key) if ttl == -1 then redis.call(\"EXPIRE\", @key, @timeout) end return count");
 
         public override async Task<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, ICounterKeyBuilder counterKeyBuilder, RateLimitOptions rateLimitOptions, CancellationToken cancellationToken = default)
         {
