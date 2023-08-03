@@ -3,6 +3,7 @@
     public enum ClientType
     {
         Wildcard,
-        Regex
+        Regex,
+        EnabledFalse
     }
 }

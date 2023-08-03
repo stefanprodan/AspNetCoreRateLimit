@@ -1,5 +1,6 @@
 ﻿using AspNetCoreRateLimit.Tests.Enums;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -265,5 +266,28 @@ namespace AspNetCoreRateLimit.Tests
             // Assert
             Assert.Equal(200, responseStatusCode);
         }
+
+        [Theory]
+        [InlineData(ClientType.EnabledFalse, "84.247.85.232")]
+        public async Task RulesDisabled(ClientType clientType, string ip)
+        {
+            // Arrange
+            int responseStatusCode = 0;
+
+            // Act    
+            for (int i = 0; i < 2; i++)
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, apiValuesPath);
+                request.Headers.Add("X-Real-IP", ip);
+                request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+
+                var response = await GetClient(clientType).SendAsync(request);
+                responseStatusCode = (int)response.StatusCode;
+            }
+
+            // Assert
+            Assert.Equal(200, responseStatusCode);
+        }
+
     }
 }

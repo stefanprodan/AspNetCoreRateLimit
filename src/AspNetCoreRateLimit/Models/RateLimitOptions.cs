@@ -7,6 +7,11 @@ namespace AspNetCoreRateLimit
 {
     public class RateLimitOptions
     {
+        /// <summary>
+        /// Gets or sets whether Rate Limiting is enabled
+        /// </summary>
+        public bool RateLimitingEnabled { get; set; } = true; // default for backward compatibility
+
         public List<RateLimitRule> GeneralRules { get; set; }
 
         public List<string> EndpointWhitelist { get; set; }
