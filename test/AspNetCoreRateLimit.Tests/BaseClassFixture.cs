@@ -11,6 +11,7 @@ namespace AspNetCoreRateLimit.Tests
     {
         private readonly HttpClient _wildcardClient;
         private readonly HttpClient _regexClient;
+        private readonly HttpClient _enabledFalseClient;
 
         protected BaseClassFixture(RateLimitWebApplicationFactory factory)
         {
@@ -29,6 +30,18 @@ namespace AspNetCoreRateLimit.Tests
             {
                 BaseAddress = new System.Uri("https://localhost:44304")
             });
+
+            _enabledFalseClient = factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureAppConfiguration((context, conf) =>
+                {
+                    conf.AddJsonFile("appsettings.EnabledFalse.json");
+                });
+            }).CreateClient(options: new WebApplicationFactoryClientOptions
+            {
+                BaseAddress = new System.Uri("https://localhost:44304"),
+                
+            });
         }
 
         /// <summary>
@@ -43,9 +56,16 @@ namespace AspNetCoreRateLimit.Tests
                     return _wildcardClient;
                 case ClientType.Regex:
                     return _regexClient;
+                case ClientType.EnabledFalse:
+                    return _enabledFalseClient;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(clientType), clientType, "Unexpected client type.");
             }
+        }
+
+        protected void SetOptions(RateLimitOptions options)
+        {
+
         }
     }
 }

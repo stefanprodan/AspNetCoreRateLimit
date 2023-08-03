@@ -31,7 +31,7 @@ namespace AspNetCoreRateLimit
         public async Task Invoke(HttpContext context)
         {
             // check if rate limiting is enabled
-            if (_options == null)
+            if (_options == null || _options.RateLimitingEnabled == false)
             {
                 await _next.Invoke(context);
                 return;
