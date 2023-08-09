@@ -126,8 +126,12 @@ namespace AspNetCoreRateLimit
 
                 foreach (var generalLimit in generalLimits)
                 {
-                    // add general rule if no specific rule is declared for the specified period
-                    if (!limits.Exists(l => l.Period == generalLimit.Period))
+                    
+                    if (// add general rule if no specific rule is declared when DiscardEndpointGeneralRulesWhenExistsIPOrClienIdRule is enabled
+                        (_options.DiscardEndpointGeneralRulesWhenExistsIPOrClienIdRule && !limits.Any()) 
+                        ||
+                        // add general rule if no specific rule is declared for the specified period when DiscardEndpointGeneralRulesWhenExistsIPOrClienIdRule is disabled
+                        (!_options.DiscardEndpointGeneralRulesWhenExistsIPOrClienIdRule && !limits.Exists(l => l.Period == generalLimit.Period)))
                     {
                         limits.Add(generalLimit);
                     }

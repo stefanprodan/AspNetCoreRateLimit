@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -21,10 +22,13 @@ namespace AspNetCoreRateLimit
 
         public IPAddress End { get; set; }
 
+        public List<IPAddress> IPList { get; set; }
+
         public IpAddressRange()
         {
             Begin = new IPAddress(0L);
             End = new IPAddress(0L);
+            IPList = new List<IPAddress>();
         }
 
         public IpAddressRange(string ipRangeString)
@@ -73,14 +77,31 @@ namespace AspNetCoreRateLimit
                 return;
             }
 
+            // Pattern 5. List of ips: "169.258.0.0,169.258.0.255"
+            var m5 = Regex.Match(ipRangeString, @"^([\da-f\.:]+)(,[\da-f\.:]+)*$", RegexOptions.IgnoreCase);
+            if (m5.Success)
+            {
+                IPList = new List<IPAddress>();
+                IPList.AddRange(ipRangeString.Split(',').Select(ipString=> IPAddress.Parse(ipString)));
+                return;
+            }
+
             throw new FormatException("Unknown IP range string.");
         }
 
         public bool Contains(IPAddress ipaddress)
         {
-            if (ipaddress.AddressFamily != Begin.AddressFamily) return false;
-            var adrBytes = ipaddress.GetAddressBytes();
-            return Bits.GE(Begin.GetAddressBytes(), adrBytes) && Bits.LE(End.GetAddressBytes(), adrBytes);
+            if (IPList != null)
+            {
+                var adrBytes = ipaddress.GetAddressBytes();
+                return IPList.Any(e => ipaddress.AddressFamily == e.AddressFamily && Bits.EQ(e.GetAddressBytes(), adrBytes));
+            }
+            else
+            {
+                if (Begin == null || ipaddress.AddressFamily != Begin.AddressFamily) return false;
+                var adrBytes = ipaddress.GetAddressBytes();
+                return Bits.GE(Begin.GetAddressBytes(), adrBytes) && Bits.LE(End.GetAddressBytes(), adrBytes);
+            }
         }
     }
 
@@ -106,6 +127,13 @@ namespace AspNetCoreRateLimit
             return A.Zip(B, (a, b) => a == b ? 0 : a < b ? 1 : -1)
                 .SkipWhile(c => c == 0)
                 .FirstOrDefault() >= 0;
+        }
+
+        internal static bool EQ(byte[] A, byte[] B)
+        {
+            return A.Zip(B, (a, b) => a == b ? 0 : 1)
+                .SkipWhile(c => c == 0)
+                .FirstOrDefault() == 0;
         }
 
         internal static bool LE(byte[] A, byte[] B)
