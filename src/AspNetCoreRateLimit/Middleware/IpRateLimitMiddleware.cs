@@ -15,7 +15,7 @@ namespace AspNetCoreRateLimit
             IRateLimitConfiguration config,
             ILogger<IpRateLimitMiddleware> logger
         )
-            : base(next, options?.Value, new IpRateLimitProcessor(options?.Value, policyStore, processingStrategy), config)
+            : base(next, options?.Value, new IpRateLimitProcessor(options?.Value, policyStore, processingStrategy), config, logger)
         {
             _logger = logger;
         }
