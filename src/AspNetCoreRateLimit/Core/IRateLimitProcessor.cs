@@ -9,6 +9,6 @@ namespace AspNetCoreRateLimit
         Task<IEnumerable<RateLimitRule>> GetMatchingRulesAsync(ClientRequestIdentity identity, CancellationToken cancellationToken = default);
         RateLimitHeaders GetRateLimitHeaders(RateLimitCounter? counter, RateLimitRule rule, CancellationToken cancellationToken = default);
         Task<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken = default);
-        bool IsWhitelisted(ClientRequestIdentity requestIdentity);
+        bool IsOnAllowedList(ClientRequestIdentity requestIdentity);
     }
 }

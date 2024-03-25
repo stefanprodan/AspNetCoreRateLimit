@@ -16,7 +16,7 @@ namespace AspNetCoreRateLimit
         }
 
 
-        public virtual bool IsWhitelisted(ClientRequestIdentity requestIdentity)
+        public virtual bool IsOnAllowedList(ClientRequestIdentity requestIdentity)
         {
             if (_options.ClientWhitelist != null && _options.ClientWhitelist.Contains(requestIdentity.ClientId))
             {
