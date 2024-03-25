@@ -41,7 +41,7 @@ namespace AspNetCoreRateLimit
             var identity = await ResolveIdentityAsync(context);
 
             // check allowed list
-            if (_processor.IsOnAllowedList(identity))
+            if (_processor.IsWhitelisted(identity))
             {
                 await _next.Invoke(context);
                 return;
