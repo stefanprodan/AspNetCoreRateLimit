@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace AspNetCoreRateLimit
@@ -8,11 +9,12 @@ namespace AspNetCoreRateLimit
     {
         private readonly IpRateLimitOptions _options;
         private readonly IpRateLimitPolicies _policies;
-
+        private readonly ILogger<DistributedCacheIpPolicyStore> _logger;
         public DistributedCacheIpPolicyStore(
             IDistributedCache cache,
+            ILogger<DistributedCacheIpPolicyStore> logger,
             IOptions<IpRateLimitOptions> options = null,
-            IOptions<IpRateLimitPolicies> policies = null) : base(cache)
+            IOptions<IpRateLimitPolicies> policies = null) : base(cache, logger)
         {
             _options = options?.Value;
             _policies = policies?.Value;
