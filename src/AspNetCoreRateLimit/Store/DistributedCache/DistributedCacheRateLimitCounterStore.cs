@@ -2,10 +2,7 @@
 
 namespace AspNetCoreRateLimit
 {
-    public class DistributedCacheRateLimitCounterStore : DistributedCacheRateLimitStore<RateLimitCounter?>, IRateLimitCounterStore
+    public class DistributedCacheRateLimitCounterStore(IDistributedCache cache) : DistributedCacheRateLimitStore<RateLimitCounter?>(cache), IRateLimitCounterStore
     {
-        public DistributedCacheRateLimitCounterStore(IDistributedCache cache) : base(cache)
-        {
-        }
     }
 }

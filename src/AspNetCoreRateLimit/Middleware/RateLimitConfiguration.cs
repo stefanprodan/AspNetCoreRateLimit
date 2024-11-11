@@ -4,25 +4,19 @@ using System.Collections.Generic;
 
 namespace AspNetCoreRateLimit
 {
-    public class RateLimitConfiguration : IRateLimitConfiguration
+    public class RateLimitConfiguration(
+        IOptions<IpRateLimitOptions> ipOptions,
+        IOptions<ClientRateLimitOptions> clientOptions) : IRateLimitConfiguration
     {
-        public IList<IClientResolveContributor> ClientResolvers { get; } = new List<IClientResolveContributor>();
-        public IList<IIpResolveContributor> IpResolvers { get; } = new List<IIpResolveContributor>();
+        public IList<IClientResolveContributor> ClientResolvers { get; } = [];
+        public IList<IIpResolveContributor> IpResolvers { get; } = [];
 
         public virtual ICounterKeyBuilder EndpointCounterKeyBuilder { get; } = new PathCounterKeyBuilder();
 
         public virtual Func<double> RateIncrementer { get; } = () => 1;
 
-        public RateLimitConfiguration(
-            IOptions<IpRateLimitOptions> ipOptions,
-            IOptions<ClientRateLimitOptions> clientOptions)
-        {
-            IpRateLimitOptions = ipOptions?.Value;
-            ClientRateLimitOptions = clientOptions?.Value;
-        }
-
-        protected readonly IpRateLimitOptions IpRateLimitOptions;
-        protected readonly ClientRateLimitOptions ClientRateLimitOptions;
+        protected readonly IpRateLimitOptions IpRateLimitOptions = ipOptions?.Value;
+        protected readonly ClientRateLimitOptions ClientRateLimitOptions = clientOptions?.Value;
 
         public virtual void RegisterResolvers()
         {

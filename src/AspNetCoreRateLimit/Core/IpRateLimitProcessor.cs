@@ -5,25 +5,15 @@ using System.Threading.Tasks;
 
 namespace AspNetCoreRateLimit
 {
-    public class IpRateLimitProcessor : RateLimitProcessor, IRateLimitProcessor
+    public class IpRateLimitProcessor(
+            IpRateLimitOptions options,
+            IIpPolicyStore policyStore,
+            IProcessingStrategy processingStrategy) : RateLimitProcessor(options), IRateLimitProcessor
     {
-        private readonly IpRateLimitOptions _options;
-        private readonly IRateLimitStore<IpRateLimitPolicies> _policyStore;
-        private readonly IProcessingStrategy _processingStrategy;
-        private readonly ICounterKeyBuilder _counterKeyBuilder;
-
-        public IpRateLimitProcessor(
-                IpRateLimitOptions options,
-                IIpPolicyStore policyStore,
-                IProcessingStrategy processingStrategy)
-            : base(options)
-        {
-            _options = options;
-            _policyStore = policyStore;
-            _counterKeyBuilder = new IpCounterKeyBuilder(options);
-            _processingStrategy = processingStrategy;
-        }
-
+        private readonly IpRateLimitOptions _options = options;
+        private readonly IRateLimitStore<IpRateLimitPolicies> _policyStore = policyStore;
+        private readonly IProcessingStrategy _processingStrategy = processingStrategy;
+        private readonly ICounterKeyBuilder _counterKeyBuilder = new IpCounterKeyBuilder(options);
 
         public async Task<IEnumerable<RateLimitRule>> GetMatchingRulesAsync(ClientRequestIdentity identity, CancellationToken cancellationToken = default)
         {

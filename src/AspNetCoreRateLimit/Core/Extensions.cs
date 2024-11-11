@@ -27,7 +27,7 @@ namespace AspNetCoreRateLimit
             }
             // if the regex is e.g. /api/values/ the path should be an exact match
             // if all paths below this should be included the regex should be /api/values/*
-            if (value[value.Length - 1] != '$')
+            if (value[^1] != '$')
             {
                 value += '$';
             }
@@ -49,7 +49,7 @@ namespace AspNetCoreRateLimit
         public static TimeSpan ToTimeSpan(this string timeSpan)
         {
             var l = timeSpan.Length - 1;
-            var value = timeSpan.Substring(0, l);
+            var value = timeSpan[..l];
             var type = timeSpan.Substring(l, 1);
 
             return type switch

@@ -6,14 +6,9 @@ using System.Threading.Tasks;
 
 namespace AspNetCoreRateLimit
 {
-    public abstract class ProcessingStrategy : IProcessingStrategy
+    public abstract class ProcessingStrategy(IRateLimitConfiguration config) : IProcessingStrategy
     {
-        private readonly IRateLimitConfiguration _config;
-
-        protected ProcessingStrategy(IRateLimitConfiguration config)
-        {
-            _config = config;
-        }
+        private readonly IRateLimitConfiguration _config = config;
 
         public abstract Task<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, ICounterKeyBuilder counterKeyBuilder, RateLimitOptions rateLimitOptions, CancellationToken cancellationToken = default);
 

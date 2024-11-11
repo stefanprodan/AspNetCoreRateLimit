@@ -6,14 +6,9 @@ using System.Threading.Tasks;
 
 namespace AspNetCoreRateLimit
 {
-    public class DistributedCacheRateLimitStore<T> : IRateLimitStore<T>
+    public class DistributedCacheRateLimitStore<T>(IDistributedCache cache) : IRateLimitStore<T>
     {
-        private readonly IDistributedCache _cache;
-
-        public DistributedCacheRateLimitStore(IDistributedCache cache)
-        {
-            _cache = cache;
-        }
+        private readonly IDistributedCache _cache = cache;
 
         public Task SetAsync(string id, T entry, TimeSpan? expirationTime = null, CancellationToken cancellationToken = default)
         {

@@ -1,13 +1,8 @@
 ﻿namespace AspNetCoreRateLimit
 {
-    public class IpCounterKeyBuilder : ICounterKeyBuilder
+    public class IpCounterKeyBuilder(IpRateLimitOptions options) : ICounterKeyBuilder
     {
-        private readonly IpRateLimitOptions _options;
-
-        public IpCounterKeyBuilder(IpRateLimitOptions options)
-        {
-            _options = options;
-        }
+        private readonly IpRateLimitOptions _options = options;
 
         public string Build(ClientRequestIdentity requestIdentity, RateLimitRule rule)
         {

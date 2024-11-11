@@ -4,19 +4,13 @@ using Microsoft.Extensions.Options;
 
 namespace AspNetCoreRateLimit
 {
-    public class MemoryCacheIpPolicyStore : MemoryCacheRateLimitStore<IpRateLimitPolicies>, IIpPolicyStore
+    public class MemoryCacheIpPolicyStore(
+        IMemoryCache cache,
+        IOptions<IpRateLimitOptions> options = null,
+        IOptions<IpRateLimitPolicies> policies = null) : MemoryCacheRateLimitStore<IpRateLimitPolicies>(cache), IIpPolicyStore
     {
-        private readonly IpRateLimitOptions _options;
-        private readonly IpRateLimitPolicies _policies;
-
-        public MemoryCacheIpPolicyStore(
-            IMemoryCache cache,
-            IOptions<IpRateLimitOptions> options = null,
-            IOptions<IpRateLimitPolicies> policies = null) : base(cache)
-        {
-            _options = options?.Value;
-            _policies = policies?.Value;
-        }
+        private readonly IpRateLimitOptions _options = options?.Value;
+        private readonly IpRateLimitPolicies _policies = policies?.Value;
 
         public async Task SeedAsync()
         {

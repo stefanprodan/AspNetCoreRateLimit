@@ -5,17 +5,10 @@ using System.Threading.Tasks;
 
 namespace AspNetCoreRateLimit
 {
-    public class AsyncKeyLockProcessingStrategy : ProcessingStrategy
+    public class AsyncKeyLockProcessingStrategy(IRateLimitCounterStore counterStore, IRateLimitConfiguration config) : ProcessingStrategy(config)
     {
-        private readonly IRateLimitCounterStore _counterStore;
-        private readonly IRateLimitConfiguration _config;
-
-        public AsyncKeyLockProcessingStrategy(IRateLimitCounterStore counterStore, IRateLimitConfiguration config)
-            : base(config)
-        {
-            _counterStore = counterStore;
-            _config = config;
-        }
+        private readonly IRateLimitCounterStore _counterStore = counterStore;
+        private readonly IRateLimitConfiguration _config = config;
 
         /// The key-lock used for limiting requests.
         private static readonly AsyncKeyedLocker<string> AsyncLock = new(o =>

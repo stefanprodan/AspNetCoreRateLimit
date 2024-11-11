@@ -4,14 +4,10 @@ using System.Threading.Tasks;
 
 namespace AspNetCoreRateLimit
 {
-    public class ClientHeaderResolveContributor : IClientResolveContributor
+    public class ClientHeaderResolveContributor(string headerName) : IClientResolveContributor
     {
-        private readonly string _headerName;
+        private readonly string _headerName = headerName;
 
-        public ClientHeaderResolveContributor(string headerName)
-        {
-            _headerName = headerName;
-        }
         public Task<string> ResolveClientAsync(HttpContext httpContext)
         {
             string clientId = null;

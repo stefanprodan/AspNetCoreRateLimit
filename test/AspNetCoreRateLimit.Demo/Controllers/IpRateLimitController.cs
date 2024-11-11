@@ -32,7 +32,7 @@ namespace AspNetCoreRateLimit.Demo.Controllers
             {
                 Ip = "8.8.4.4",
                 Rules = new List<RateLimitRule>(new RateLimitRule[] {
-                    new RateLimitRule {
+                    new() {
                         Endpoint = "*:/api/testupdate",
                         Limit = 100,
                         Period = "1d" }

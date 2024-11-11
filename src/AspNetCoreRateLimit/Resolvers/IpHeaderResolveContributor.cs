@@ -4,15 +4,10 @@ using System.Net;
 
 namespace AspNetCoreRateLimit
 {
-    public class IpHeaderResolveContributor : IIpResolveContributor
+    public class IpHeaderResolveContributor(
+        string headerName) : IIpResolveContributor
     {
-        private readonly string _headerName;
-
-        public IpHeaderResolveContributor(
-            string headerName)
-        {
-            _headerName = headerName;
-        }
+        private readonly string _headerName = headerName;
 
         public string ResolveIp(HttpContext httpContext)
         {

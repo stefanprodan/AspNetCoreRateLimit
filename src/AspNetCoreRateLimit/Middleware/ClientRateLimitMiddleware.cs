@@ -4,20 +4,14 @@ using Microsoft.Extensions.Options;
 
 namespace AspNetCoreRateLimit
 {
-    public class ClientRateLimitMiddleware : RateLimitMiddleware<ClientRateLimitProcessor>
+    public class ClientRateLimitMiddleware(RequestDelegate next,
+        IProcessingStrategy processingStrategy,
+        IOptions<ClientRateLimitOptions> options,
+        IClientPolicyStore policyStore,
+        IRateLimitConfiguration config,
+        ILogger<ClientRateLimitMiddleware> logger) : RateLimitMiddleware<ClientRateLimitProcessor>(next, options?.Value, new ClientRateLimitProcessor(options?.Value, policyStore, processingStrategy), config)
     {
-        private readonly ILogger<ClientRateLimitMiddleware> _logger;
-
-        public ClientRateLimitMiddleware(RequestDelegate next,
-            IProcessingStrategy processingStrategy,
-            IOptions<ClientRateLimitOptions> options,
-            IClientPolicyStore policyStore,
-            IRateLimitConfiguration config,
-            ILogger<ClientRateLimitMiddleware> logger)
-        : base(next, options?.Value, new ClientRateLimitProcessor(options?.Value, policyStore, processingStrategy), config)
-        {
-            _logger = logger;
-        }
+        private readonly ILogger<ClientRateLimitMiddleware> _logger = logger;
 
         protected override void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule)
         {

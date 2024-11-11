@@ -5,14 +5,9 @@ using System.Threading.Tasks;
 
 namespace AspNetCoreRateLimit
 {
-    public class MemoryCacheRateLimitStore<T> : IRateLimitStore<T>
+    public class MemoryCacheRateLimitStore<T>(IMemoryCache cache) : IRateLimitStore<T>
     {
-        private readonly IMemoryCache _cache;
-
-        public MemoryCacheRateLimitStore(IMemoryCache cache)
-        {
-            _cache = cache;
-        }
+        private readonly IMemoryCache _cache = cache;
 
         public Task<bool> ExistsAsync(string id, CancellationToken cancellationToken = default)
         {

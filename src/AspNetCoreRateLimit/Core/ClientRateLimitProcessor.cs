@@ -4,24 +4,15 @@ using System.Threading.Tasks;
 
 namespace AspNetCoreRateLimit
 {
-    public class ClientRateLimitProcessor : RateLimitProcessor, IRateLimitProcessor
+    public class ClientRateLimitProcessor(
+            ClientRateLimitOptions options,
+            IClientPolicyStore policyStore,
+            IProcessingStrategy processingStrategy) : RateLimitProcessor(options), IRateLimitProcessor
     {
-        private readonly ClientRateLimitOptions _options;
-        private readonly IProcessingStrategy _processingStrategy;
-        private readonly IRateLimitStore<ClientRateLimitPolicy> _policyStore;
-        private readonly ICounterKeyBuilder _counterKeyBuilder;
-
-        public ClientRateLimitProcessor(
-                ClientRateLimitOptions options,
-                IClientPolicyStore policyStore,
-                IProcessingStrategy processingStrategy)
-            : base(options)
-        {
-            _options = options;
-            _policyStore = policyStore;
-            _counterKeyBuilder = new ClientCounterKeyBuilder(options);
-            _processingStrategy = processingStrategy;
-        }
+        private readonly ClientRateLimitOptions _options = options;
+        private readonly IProcessingStrategy _processingStrategy = processingStrategy;
+        private readonly IRateLimitStore<ClientRateLimitPolicy> _policyStore = policyStore;
+        private readonly ICounterKeyBuilder _counterKeyBuilder = new ClientCounterKeyBuilder(options);
 
         public async Task<IEnumerable<RateLimitRule>> GetMatchingRulesAsync(ClientRequestIdentity identity, CancellationToken cancellationToken = default)
         {

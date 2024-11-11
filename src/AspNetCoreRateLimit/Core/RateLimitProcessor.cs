@@ -6,15 +6,9 @@ using System.Threading;
 
 namespace AspNetCoreRateLimit
 {
-    public abstract class RateLimitProcessor
+    public abstract class RateLimitProcessor(RateLimitOptions options)
     {
-        private readonly RateLimitOptions _options;
-
-        protected RateLimitProcessor(RateLimitOptions options)
-        {
-            _options = options;
-        }
-
+        private readonly RateLimitOptions _options = options;
 
         public virtual bool IsWhitelisted(ClientRequestIdentity requestIdentity)
         {
@@ -143,7 +137,7 @@ namespace AspNetCoreRateLimit
                 }
             }
 
-            limits = limits.OrderBy(l => l.PeriodTimespan).ToList();
+            limits = [.. limits.OrderBy(l => l.PeriodTimespan)];
 
             if (_options.StackBlockedRequests)
             {
