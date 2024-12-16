@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AspNetCoreRateLimit.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 
 namespace AspNetCoreRateLimit
 {
@@ -14,17 +16,20 @@ namespace AspNetCoreRateLimit
         private readonly TProcessor _processor;
         private readonly RateLimitOptions _options;
         private readonly IRateLimitConfiguration _config;
+        private readonly LinkGenerator _linkGenerator;
 
         protected RateLimitMiddleware(
             RequestDelegate next,
             RateLimitOptions options,
             TProcessor processor,
-            IRateLimitConfiguration config)
+            IRateLimitConfiguration config,
+            LinkGenerator linkGenerator)
         {
             _next = next;
             _options = options;
             _processor = processor;
             _config = config;
+            _linkGenerator = linkGenerator;
             _config.RegisterResolvers();
         }
 
@@ -168,27 +173,82 @@ namespace AspNetCoreRateLimit
 
         public virtual Task ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitRule rule, string retryAfter)
         {
-            //Use Endpoint QuotaExceededResponse
+
+            QuotaExceededResponse quotaExceededResponse;
+
+            // Use Endpoint QuotaExceededResponse first, then Global QuotaExceededResponse, then default
             if (rule.QuotaExceededResponse != null)
             {
-                _options.QuotaExceededResponse = rule.QuotaExceededResponse;
+                quotaExceededResponse = rule.QuotaExceededResponse;
             }
-            var message = string.Format(
-                _options.QuotaExceededResponse?.Content ??
-                _options.QuotaExceededMessage ??
-                "API calls quota exceeded! maximum admitted {0} per {1}.",
-                rule.Limit,
-                rule.PeriodTimespan.HasValue ? FormatPeriodTimespan(rule.PeriodTimespan.Value) : rule.Period, retryAfter);
-            if (!_options.DisableRateLimitHeaders)
+            else if (_options.QuotaExceededResponse != null)
             {
-                httpContext.Response.Headers["Retry-After"] = retryAfter;
+                quotaExceededResponse = _options.QuotaExceededResponse;
+            }
+            else
+            {
+                quotaExceededResponse = new QuotaExceededResponse()
+                {
+                    Content = "API calls quota exceeded! maximum admitted {0} per {1}.",
+                    ContentType = "text/plain"
+                };
             }
 
-            httpContext.Response.StatusCode = _options.QuotaExceededResponse?.StatusCode ?? _options.HttpStatusCode;
-            httpContext.Response.ContentType = _options.QuotaExceededResponse?.ContentType ?? "text/plain";
+            switch (quotaExceededResponse.ResponseType)
+            {
 
-            return httpContext.Response.WriteAsync(message);
+                case ResponseType.RedirectToAction:
+                    if (string.IsNullOrWhiteSpace(quotaExceededResponse.Action) ||
+                        string.IsNullOrWhiteSpace(quotaExceededResponse.Controller))
+                    {
+                        throw new InvalidOperationException("ResponseType is RedirectToAction, but RedirectAction or RedirectController prop is not set.");
+                    }
+
+                    // 传递路由数据
+                    var routeValues = new QuotaExceededParams()
+                    {
+                        EndPoint = rule.Endpoint,
+                        Path = httpContext.Request.Path.Value,
+                        Limit = rule.Limit,
+                        Period = rule.Period,
+                        RetryAfter = retryAfter
+                    };
+
+                    var redirectUrl = _linkGenerator.GetPathByAction(
+                        httpContext,
+                        action: quotaExceededResponse.Action,
+                        controller: quotaExceededResponse.Controller,
+                        values: new { quotaExceededParams = routeValues });
+                    httpContext.Response.Redirect(redirectUrl);
+                    return Task.CompletedTask;
+
+                case ResponseType.RedirectToUrl:
+                    if (string.IsNullOrWhiteSpace(quotaExceededResponse.Url))
+                    {
+                        throw new InvalidOperationException("ResponseType is RedirectToUrl, but RedirectUrl prop is not set.");
+                    }
+                    httpContext.Response.Redirect(quotaExceededResponse.Url);
+                    return Task.CompletedTask;
+
+                default:
+                    var message = string.Format(
+                        quotaExceededResponse.Content ?? "API calls quota exceeded! maximum admitted {0} per {1}.",
+                        rule.Limit,
+                        rule.PeriodTimespan.HasValue ? FormatPeriodTimespan(rule.PeriodTimespan.Value) : rule.Period, retryAfter);
+                    if (!_options.DisableRateLimitHeaders)
+                    {
+                        httpContext.Response.Headers["Retry-After"] = retryAfter;
+                    }
+
+                    httpContext.Response.StatusCode = quotaExceededResponse?.StatusCode ?? _options.HttpStatusCode;
+                    httpContext.Response.ContentType = quotaExceededResponse?.ContentType ?? "text/plain";
+
+                    return httpContext.Response.WriteAsync(message);
+            }
+
         }
+
+
 
         private static string FormatPeriodTimespan(TimeSpan period)
         {

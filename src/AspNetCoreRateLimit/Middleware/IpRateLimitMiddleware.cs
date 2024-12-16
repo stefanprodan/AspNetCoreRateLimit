@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -13,9 +14,10 @@ namespace AspNetCoreRateLimit
             IOptions<IpRateLimitOptions> options,
             IIpPolicyStore policyStore,
             IRateLimitConfiguration config,
-            ILogger<IpRateLimitMiddleware> logger
+            ILogger<IpRateLimitMiddleware> logger,
+            LinkGenerator linkGenerator
         )
-            : base(next, options?.Value, new IpRateLimitProcessor(options?.Value, policyStore, processingStrategy), config)
+            : base(next, options?.Value, new IpRateLimitProcessor(options?.Value, policyStore, processingStrategy), config, linkGenerator)
         {
             _logger = logger;
         }

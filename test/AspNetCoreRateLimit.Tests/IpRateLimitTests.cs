@@ -1,4 +1,5 @@
 ﻿using AspNetCoreRateLimit.Tests.Enums;
+using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
@@ -69,6 +70,266 @@ namespace AspNetCoreRateLimit.Tests
             Assert.Equal(
                 "{ \"message\": \"Whoa! Calm down, cowboy!\", \"details\": \"Quota exceeded. Maximum allowed: 2 per 1s. Please try again in 1 second(s).\" }",
                 content);
+        }
+
+        [Theory]
+        [InlineData(ClientType.Wildcard)]
+        public async Task GlobalIpRuleCounterByVerbAndPath(ClientType clientType)
+        {
+            const string apiPath = "/api/CounterKey/VerbAndPath";
+            // Arrange
+            var ip = "84.247.86.1";
+
+            int statusCode = 0;
+
+            var methods = new HttpMethod[]
+            {
+                HttpMethod.Get,
+                HttpMethod.Post,
+                HttpMethod.Put,
+                HttpMethod.Patch,
+                HttpMethod.Options,
+                HttpMethod.Delete,
+            };
+
+            // Act    
+            foreach(var method in methods)
+            {
+                using (var request = new HttpRequestMessage(method, apiPath))
+                {
+                    request.Headers.Add("X-Real-IP", ip);
+
+                    using (var response = await GetClient(clientType).SendAsync(request))
+                    {
+                        statusCode = (int)response.StatusCode;
+                        Assert.NotEqual(429, statusCode);
+                    }
+                }
+            }
+
+            ip = "84.247.86.2";
+
+            for (var i = 0; i < 4; i++)
+            {
+                using (var request = new HttpRequestMessage(HttpMethod.Get, apiPath))
+                {
+                    request.Headers.Add("X-Real-IP", ip);
+
+                    using (var response = await GetClient(clientType).SendAsync(request))
+                    {
+                        statusCode = (int)response.StatusCode;
+                    }
+                }
+            }
+
+            Assert.Equal(429, statusCode);
+        }
+
+        [Theory]
+        [InlineData(ClientType.Wildcard)]
+        public async Task GlobalIpRuleCounterByPath(ClientType clientType)
+        {
+            const string apiPath = "/api/CounterKey/Path";
+            // Arrange
+            var ip = "84.247.86.3";
+
+            int statusCode = 0;
+
+            var methods = new HttpMethod[]
+            {
+                HttpMethod.Get,
+                HttpMethod.Post,
+                HttpMethod.Put,
+                HttpMethod.Patch,
+            };
+
+            // Act    
+            foreach (var method in methods)
+            {
+                using (var request = new HttpRequestMessage(method, apiPath))
+                {
+                    request.Headers.Add("X-Real-IP", ip);
+
+                    using (var response = await GetClient(clientType).SendAsync(request))
+                    {
+                        statusCode = (int)response.StatusCode;
+                    }
+                }
+            }
+
+            // Assert
+            Assert.Equal(429, statusCode);
+
+            ip = "84.247.86.4";
+
+            for (var i = 0; i < 4; i++)
+            {
+                using (var request = new HttpRequestMessage(HttpMethod.Get, apiPath))
+                {
+                    request.Headers.Add("X-Real-IP", ip);
+
+                    using (var response = await GetClient(clientType).SendAsync(request))
+                    {
+                        statusCode = (int)response.StatusCode;
+                    }
+                }
+            }
+
+            Assert.Equal(429, statusCode);
+        }
+
+        [Theory]
+        [InlineData(ClientType.Wildcard)]
+        public async Task GlobalIpRuleCounterByVerbAndRule(ClientType clientType)
+        {
+            const string apiPath = "/api/CounterKey/VerbAndRule/{0}";
+            // Arrange
+            var ip = "84.247.86.5";
+
+            int statusCode = 0;
+
+            string content;
+
+            var methods = new HttpMethod[]
+            {
+                HttpMethod.Get,
+                HttpMethod.Post,
+                HttpMethod.Put,
+                HttpMethod.Patch,
+            };
+
+            int id = 0;
+            // Act    
+            foreach (var method in methods)
+            {
+                id++;
+                using (var request = new HttpRequestMessage(method, string.Format(apiPath, id)))
+                {
+                    request.Headers.Add("X-Real-IP", ip);
+
+                    using (var response = await GetClient(clientType).SendAsync(request))
+                    {
+                        statusCode = (int)response.StatusCode;
+                        // Assert
+                        Assert.NotEqual(429, statusCode);
+                        content = await response.Content.ReadAsStringAsync();
+                        Assert.Equal(content, $"{method.ToString().ToUpper()}_{id}");
+                    }
+                }
+            }
+
+
+            ip = "84.247.86.6";
+            id = 0;
+            for (var i = 0; i < 4; i++)
+            {
+                id++;
+                using (var request = new HttpRequestMessage(HttpMethod.Get, string.Format(apiPath, id)))
+                {
+                    request.Headers.Add("X-Real-IP", ip);
+
+                    using (var response = await GetClient(clientType).SendAsync(request))
+                    {
+                        statusCode = (int)response.StatusCode;
+                        if (i < 3)
+                        {
+                            Assert.NotEqual(429, statusCode);
+                        }
+                        else
+                        {
+                            Assert.Equal(429, statusCode);
+                        }
+                    }
+                }
+            }
+
+            
+        }
+
+        [Theory]
+        [InlineData(ClientType.Wildcard)]
+        public async Task GlobalIpRuleCounterByRule(ClientType clientType)
+        {
+            const string apiPath = "/api/CounterKey/Rule/{0}";
+            // Arrange
+            var ip = "84.247.86.7";
+
+            int statusCode = 0;
+
+            string content;
+
+            var methods = new HttpMethod[]
+            {
+                HttpMethod.Get,
+                HttpMethod.Post,
+                HttpMethod.Put,
+                HttpMethod.Patch,
+            };
+
+            int id = 0;
+            // Act    
+            foreach (var method in methods)
+            {
+                using (var request = new HttpRequestMessage(method, string.Format(apiPath, id)))
+                {
+                    request.Headers.Add("X-Real-IP", ip);
+
+                    using (var response = await GetClient(clientType).SendAsync(request))
+                    {
+                        statusCode = (int)response.StatusCode;
+                        content = await response.Content.ReadAsStringAsync();
+                        if (id < methods.Length)
+                        {
+                            // Assert
+                            Assert.NotEqual(429, statusCode);
+                            Assert.Equal(content, $"{method.ToString().ToUpper()}_{id}");
+                        }
+                        else
+                        {
+                            Assert.Equal(429, statusCode);
+                        }
+                    }
+                }
+                id++;
+            }
+        }
+
+        [Theory]
+        [InlineData(ClientType.Wildcard)]
+        public async Task GlobalIpRuleRedirectAction(ClientType clientType)
+        {
+            const string apiPath = "/api/CounterKey/TestCustomQuotaExceededResponse";
+            // Arrange
+            var ip = "84.247.86.8";
+
+            int statusCode = 0;
+
+            string content;
+            // Act    
+            for (int i = 0; i < 4; i++)
+            {
+                using (var request = new HttpRequestMessage(HttpMethod.Get, apiPath))
+                {
+                    request.Headers.Add("X-Real-IP", ip);
+
+                    using (var response = await GetClient(clientType).SendAsync(request))
+                    {
+                        statusCode = (int)response.StatusCode;
+                        content = await response.Content.ReadAsStringAsync();
+                        if (i < 3)
+                        {
+                            // Assert
+                            Assert.NotEqual(429, statusCode);
+                            Assert.Equal("GET", content);
+                        }
+                        else
+                        {
+                            Assert.Equal(429, statusCode);
+                            Assert.StartsWith("This is customQuotaExceededResponse.", content);
+                        }
+                    }
+                }
+            }
         }
 
         [Theory]

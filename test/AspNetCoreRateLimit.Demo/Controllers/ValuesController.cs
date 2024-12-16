@@ -37,5 +37,7 @@ namespace AspNetCoreRateLimit.Demo.Controllers
         public void Delete(int id)
         {
         }
+
+
     }
 }

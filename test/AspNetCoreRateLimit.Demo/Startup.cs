@@ -48,6 +48,7 @@ namespace AspNetCoreRateLimit.Demo
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseRouting();
             app.UseBlockingDetection();
 
             app.UseIpRateLimiting();
@@ -63,7 +64,7 @@ namespace AspNetCoreRateLimit.Demo
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseDefaultFiles(new DefaultFilesOptions 
             { 
@@ -72,6 +73,11 @@ namespace AspNetCoreRateLimit.Demo
             app.UseStaticFiles();
 
             app.UseMvc();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapDefaultControllerRoute();
+            });
         }
     }
 }
