@@ -28,7 +28,7 @@ namespace AspNetCoreRateLimit
 
             var bytes = Encoding.UTF8.GetBytes(key);
 
-            using var algorithm = SHA1.Create();
+            using var algorithm = SHA256.Create();
             var hash = algorithm.ComputeHash(bytes);
 
             return Convert.ToBase64String(hash);
